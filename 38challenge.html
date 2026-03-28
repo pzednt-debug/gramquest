@@ -400,18 +400,8 @@ function buildSvg() {
     txt.textContent = '';
 
     // Position number (small, faint)
-    const posNum = document.createElementNS('http://www.w3.org/2000/svg','text');
-    posNum.setAttribute('x', cx);
-    posNum.setAttribute('y', cy + R - 14);
-    posNum.setAttribute('text-anchor','middle');
-    posNum.setAttribute('font-size','9');
-    posNum.setAttribute('fill','rgba(255,255,255,0.15)');
-    posNum.setAttribute('font-family','Arial');
-    posNum.textContent = i;
-
     g.appendChild(poly);
     g.appendChild(txt);
-    g.appendChild(posNum);
     g.addEventListener('click', () => onCellClick(i));
     svg.appendChild(g);
   });
