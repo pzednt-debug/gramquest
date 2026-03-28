@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GramQuest 3 – Prepositions, Conjunctions & Interjections | PzedArcade</title>
+
+  <!-- ═══════════════════════════════════════════════════════
+       GOOGLE ADSENSE — Replace with your Publisher ID
+  ════════════════════════════════════════════════════════ -->
+  <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 60%, #1a0a3e 100%);
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      color: #fff; overflow-x: hidden;
+    }
+
+    #stars-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+    .star { position: absolute; border-radius: 50%; background: #fff; animation: twinkle var(--d,3s) infinite; }
+    @keyframes twinkle { 0%,100%{opacity:.15;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
+
+    #app {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 700px;
+      padding: 12px 16px 24px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+
+    .ad-slot {
+      width: 100%; max-width: 728px;
+      background: rgba(255,255,255,0.04);
+      border: 1px dashed rgba(255,255,255,0.15);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.25); font-size: 0.7rem;
+      letter-spacing: 1px; text-transform: uppercase;
+    }
+    .ad-top    { height: 90px; margin-bottom: 10px; }
+    .ad-bottom { height: 90px; margin-top: 16px; }
+    .ad-mid    { height: 60px; margin: 10px 0; }
+
+    .pzed-header {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 50px;
+      padding: 8px 20px 8px 8px;
+      margin-bottom: 16px; width: 100%;
+    }
+    .pzed-avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(253,121,168,0.3);
+      border: 2px solid #fd79a8;
+      overflow: hidden; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+    }
+    .pzed-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .pzed-info { flex: 1; text-align: left; }
+    .pzed-name { font-family: 'Fredoka One', cursive; font-size: 1rem; color: #fd79a8; }
+    .pzed-tag  { font-size: 0.7rem; color: rgba(255,255,255,0.4); }
+    .pzed-yt {
+      font-size: 0.7rem; font-weight: 700;
+      background: #ff0000; color: #fff;
+      padding: 4px 10px; border-radius: 50px;
+      text-decoration: none; white-space: nowrap;
+    }
+
+    .game-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 3.2rem; letter-spacing: 3px;
+      background: linear-gradient(90deg,#fd79a8,#fdcb6e,#a29bfe,#fd79a8,#55efc4);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; line-height: 1;
+    }
+    .game-subtitle {
+      font-size: 0.8rem; color: #fd79a8;
+      letter-spacing: 3px; text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .screen { width: 100%; display: none; flex-direction: column; align-items: center; }
+    .screen.active { display: flex; }
+
+    .mode-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; width: 100%; margin: 8px 0 20px; }
+    .mode-card {
+      border: none; border-radius: 20px; padding: 22px 10px;
+      cursor: pointer; transition: transform .2s, box-shadow .2s;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      font-family: 'Fredoka One', cursive;
+    }
+    .mode-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,.4); }
+    .mode-card.easy   { background: linear-gradient(135deg,#00b894,#55efc4); color: #1a1a2e; }
+    .mode-card.medium { background: linear-gradient(135deg,#a29bfe,#6c5ce7); color: #fff; }
+    .mode-card.hard   { background: linear-gradient(135deg,#fd79a8,#e84393); color: #fff; }
+    .mode-icon   { font-size: 2rem; }
+    .mode-name   { font-size: 1.3rem; }
+    .mode-detail { font-family: 'Nunito', sans-serif; font-size: 0.72rem; font-weight: 700; opacity: .75; }
+
+    .music-toggle {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 50px; padding: 8px 20px; cursor: pointer;
+      font-size: 0.85rem; color: #fd79a8; margin-bottom: 10px;
+      transition: background .2s;
+    }
+    .music-toggle:hover { background: rgba(255,255,255,0.12); }
+
+    .scorebar {
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 50px; padding: 8px 20px;
+      margin-bottom: 10px; width: 100%;
+    }
+    .sc-item { text-align: center; }
+    .sc-label { font-size: 0.62rem; text-transform: uppercase; color: #fd79a8; letter-spacing: 1px; }
+    .sc-val   { font-size: 1.3rem; font-weight: 800; }
+    .sc-val.yellow { color: #fdcb6e; }
+    .sc-val.green  { color: #55efc4; }
+    .sc-val.red    { color: #ff7675; }
+
+    .timer-wrap {
+      width: 100%; background: rgba(255,255,255,0.1);
+      border-radius: 50px; height: 10px; margin-bottom: 8px; overflow: hidden;
+    }
+    .timer-bar {
+      height: 100%; border-radius: 50px;
+      background: linear-gradient(90deg,#55efc4,#fdcb6e,#fd79a8);
+      transition: width .1s linear, background .5s;
+    }
+
+    .progress-wrap {
+      width: 100%; background: rgba(255,255,255,0.08);
+      border-radius: 50px; height: 6px; margin-bottom: 10px; overflow: hidden;
+    }
+    .progress-bar { height: 100%; border-radius: 50px; background: linear-gradient(90deg,#fd79a8,#a29bfe); transition: width .4s ease; }
+
+    .streak-wrap { display: flex; gap: 7px; margin-bottom: 10px; }
+    .s-dot { width: 13px; height: 13px; border-radius: 50%; background: rgba(255,255,255,0.12); transition: all .3s; }
+    .s-dot.lit { background: #fd79a8; box-shadow: 0 0 8px #fd79a8; transform: scale(1.25); }
+
+    .word-card {
+      width: 100%;
+      background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.14);
+      border-radius: 24px; padding: 34px 24px; margin-bottom: 12px;
+      backdrop-filter: blur(8px); text-align: center;
+    }
+    .wc-hint { font-size: 0.72rem; color: #fd79a8; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+    .the-word { font-family: 'Fredoka One', cursive; font-size: 3.6rem; line-height: 1; text-shadow: 0 0 40px rgba(253,121,168,.4); }
+    .example  { margin-top: 12px; font-size: 0.88rem; color: rgba(255,255,255,.5); font-style: italic; }
+    .example span { color: #fdcb6e; font-style: normal; font-weight: 700; }
+    @keyframes cardPop { 0%{transform:scale(.95);opacity:.5} 100%{transform:scale(1);opacity:1} }
+    .card-pop { animation: cardPop .3s ease; }
+
+    /* 3-button layout for 3 categories */
+    .btn-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; width: 100%; margin-bottom: 12px; }
+    .gram-btn {
+      padding: 16px 8px; border: none; border-radius: 16px;
+      font-family: 'Fredoka One', cursive; font-size: 1.1rem; letter-spacing: 1px;
+      cursor: pointer; position: relative; overflow: hidden;
+      transition: transform .15s, box-shadow .15s, opacity .2s;
+    }
+    .gram-btn:not(:disabled):hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,.35); }
+    .gram-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .gram-btn .sub { display: block; font-family: 'Nunito',sans-serif; font-size: .58rem; font-weight: 700; letter-spacing: 1px; opacity: .7; margin-top: 2px; }
+    .gram-btn.preposition  { background: linear-gradient(135deg,#fdcb6e,#e17055); color: #1a1a2e; }
+    .gram-btn.conjunction  { background: linear-gradient(135deg,#a29bfe,#6c5ce7); color: #fff; }
+    .gram-btn.interjection { background: linear-gradient(135deg,#fd79a8,#e84393); color: #fff; }
+    .gram-btn.flash-correct { animation: flashGreen .4s; }
+    .gram-btn.flash-wrong   { animation: flashRed   .4s; }
+    @keyframes flashGreen { 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.6) saturate(1.5)} }
+    @keyframes flashRed   { 0%,100%{filter:brightness(1)} 50%{filter:brightness(.6) hue-rotate(180deg)} }
+
+    .feedback {
+      width: 100%; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.1rem; margin-bottom: 10px;
+      transition: all .3s;
+    }
+    .feedback.correct { background: rgba(85,239,196,.2); color: #55efc4; }
+    .feedback.wrong   { background: rgba(255,118,117,.2); color: #ff7675; }
+    .feedback.neutral { background: transparent; }
+
+    .end-title { font-family:'Fredoka One',cursive; font-size: 2.6rem; background: linear-gradient(90deg,#fd79a8,#fdcb6e); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .end-card  { width: 100%; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); border-radius: 22px; padding: 28px; margin: 16px 0; text-align: center; }
+    .end-big   { font-family:'Fredoka One',cursive; font-size: 4.5rem; color: #fdcb6e; }
+    .end-sub   { color: rgba(255,255,255,.55); font-size: .95rem; margin-top: 4px; }
+    .end-grade { font-family:'Fredoka One',cursive; font-size: 1.6rem; margin-top: 10px; }
+    .end-stats { display: flex; justify-content: center; gap: 30px; margin-top: 16px; }
+    .e-stat    { text-align: center; }
+    .e-stat-val { font-size: 1.8rem; font-weight: 800; }
+    .e-stat-lbl { font-size: .68rem; text-transform: uppercase; color: #fd79a8; letter-spacing: 1px; }
+
+    .replay-btn {
+      margin-top: 6px; padding: 14px 40px;
+      background: linear-gradient(135deg,#fd79a8,#e84393);
+      color: #fff; border: none; border-radius: 50px;
+      font-family: 'Fredoka One',cursive; font-size: 1.3rem;
+      cursor: pointer; transition: transform .2s, box-shadow .2s;
+    }
+    .replay-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(253,121,168,.5); }
+
+    .diff-badge {
+      display: inline-block; padding: 3px 12px; border-radius: 50px;
+      font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .diff-badge.easy   { background: rgba(0,184,148,.25); color: #55efc4; }
+    .diff-badge.medium { background: rgba(162,155,254,.25); color: #a29bfe; }
+    .diff-badge.hard   { background: rgba(253,121,168,.25); color: #fd79a8; }
+
+    .confetti-piece {
+      position: fixed; top: -20px; z-index: 9999; border-radius: 3px;
+      animation: confettiFall var(--dur,2s) ease-in forwards;
+    }
+    @keyframes confettiFall { to { transform: translateY(110vh) rotate(var(--rot,360deg)); opacity: 0; } }
+  </style>
+</head>
+<body>
+
+<div id="stars-bg"></div>
+
+<div id="app">
+
+  <div class="ad-slot ad-top">Advertisement</div>
+
+  <div class="pzed-header">
+    <div class="pzed-avatar">
+      <img src="errol-caricature.jpg" alt="Errol – PzedArcade"
+           onerror="this.style.display='none';this.parentElement.innerHTML='🎮'">
+    </div>
+    <div class="pzed-info">
+      <div class="pzed-name">PzedArcade</div>
+      <div class="pzed-tag">@pzedarcadegamingchannel</div>
+    </div>
+    <a class="pzed-yt" href="https://youtube.com/@pzedarcadegamingchannel" target="_blank">▶ YouTube</a>
+  </div>
+
+  <div class="game-title">GramQuest 3</div>
+  <div class="game-subtitle">Level 3 · Preposition · Conjunction · Interjection</div>
+
+  <!-- WELCOME SCREEN -->
+  <div class="screen active" id="screen-welcome">
+    <p style="color:rgba(255,255,255,.6);font-size:.9rem;margin-bottom:16px;">Choose your difficulty to begin!</p>
+
+    <div class="mode-grid">
+      <button class="mode-card easy" onclick="startGame('easy')">
+        <div class="mode-icon">⭐</div>
+        <div class="mode-name">EASY</div>
+        <div class="mode-detail">No timer · 15 rounds · Relax & learn</div>
+      </button>
+      <button class="mode-card medium" onclick="startGame('medium')">
+        <div class="mode-icon">⚡</div>
+        <div class="mode-name">MEDIUM</div>
+        <div class="mode-detail">8 sec timer · 15 rounds · Pick up the pace</div>
+      </button>
+      <button class="mode-card hard" onclick="startGame('hard')">
+        <div class="mode-icon">🔥</div>
+        <div class="mode-name">HARD</div>
+        <div class="mode-detail">4 sec timer · 20 rounds · Full speed!</div>
+      </button>
+    </div>
+
+    <div class="music-toggle" onclick="toggleMusicPref()" id="music-toggle-btn">
+      🎵 Background Music: <strong id="music-pref-label">ON</strong>
+    </div>
+
+    <div class="ad-slot ad-mid">Advertisement</div>
+
+    <p style="color:rgba(255,255,255,.3);font-size:.68rem;margin-top:4px;">A PzedArcade Original Game · Free to Play</p>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="screen" id="screen-game">
+    <div class="diff-badge" id="diff-badge">EASY</div>
+
+    <div class="scorebar">
+      <div class="sc-item"><div class="sc-label">Score</div><div class="sc-val yellow" id="sc-score">0</div></div>
+      <div class="sc-item"><div class="sc-label">Correct</div><div class="sc-val green" id="sc-correct">0</div></div>
+      <div class="sc-item"><div class="sc-label">Wrong</div><div class="sc-val red" id="sc-wrong">0</div></div>
+      <div class="sc-item"><div class="sc-label">Round</div><div class="sc-val" id="sc-round">1/15</div></div>
+    </div>
+
+    <div class="timer-wrap" id="timer-wrap" style="display:none">
+      <div class="timer-bar" id="timer-bar"></div>
+    </div>
+
+    <div class="progress-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+    <div class="streak-wrap" id="streak-wrap"></div>
+
+    <div class="word-card" id="word-card">
+      <div class="wc-hint">What type of word is this?</div>
+      <div class="the-word" id="the-word">—</div>
+      <div class="example" id="example-sent"></div>
+    </div>
+
+    <div class="feedback neutral" id="feedback"></div>
+
+    <div class="btn-row">
+      <button class="gram-btn preposition"  id="btn-preposition"  onclick="guess('preposition',this)">PREPOSITION<span class="sub">shows position/relation</span></button>
+      <button class="gram-btn conjunction"  id="btn-conjunction"  onclick="guess('conjunction',this)">CONJUNCTION<span class="sub">joins words/clauses</span></button>
+      <button class="gram-btn interjection" id="btn-interjection" onclick="guess('interjection',this)">INTERJECTION<span class="sub">expresses emotion</span></button>
+    </div>
+  </div>
+
+  <!-- END SCREEN -->
+  <div class="screen" id="screen-end">
+    <div class="end-title">Quest Complete!</div>
+    <div class="end-card">
+      <div class="end-big" id="end-score">0 pts</div>
+      <div class="end-sub"  id="end-detail"></div>
+      <div class="end-grade" id="end-grade"></div>
+      <div class="end-stats">
+        <div class="e-stat"><div class="e-stat-val green" id="end-correct">0</div><div class="e-stat-lbl">Correct</div></div>
+        <div class="e-stat"><div class="e-stat-val red"   id="end-wrong">0</div><div class="e-stat-lbl">Wrong</div></div>
+        <div class="e-stat"><div class="e-stat-val yellow" id="end-best">0</div><div class="e-stat-lbl">Best Streak</div></div>
+      </div>
+    </div>
+
+    <div class="ad-slot ad-mid">Advertisement</div>
+
+    <button class="replay-btn" onclick="showWelcome()">Play Again ↺</button>
+    <p style="color:rgba(255,255,255,.3);font-size:.7rem;margin-top:16px;">PzedArcade · GramQuest 3</p>
+    <p style="margin-top:12px;font-size:.75rem;">
+      Also play:
+      <a href="gramquest_level1_full.html" style="color:#a29bfe;font-weight:900;">GramQuest 1</a> &nbsp;|&nbsp;
+      <a href="gramquest2.html"            style="color:#00cec9;font-weight:900;">GramQuest 2</a> &nbsp;|&nbsp;
+      <a href="38challenge.html"           style="color:#f9ca24;font-weight:900;">38 Challenge</a> &nbsp;|&nbsp;
+      <a href="lexdrop.html"              style="color:#55efc4;font-weight:900;">LexDrop</a>
+    </p>
+  </div>
+
+  <div class="ad-slot ad-bottom">Advertisement</div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// WORD BANK — Prepositions, Conjunctions, Interjections
+// ══════════════════════════════════════════════════════════════
+const WORDS = [
+  // PREPOSITIONS
+  {w:"under",    t:"preposition", s:"The cat hid <span>under</span> the bed."},
+  {w:"over",     t:"preposition", s:"The bird flew <span>over</span> the house."},
+  {w:"beside",   t:"preposition", s:"She sat <span>beside</span> her best friend."},
+  {w:"through",  t:"preposition", s:"We walked <span>through</span> the forest."},
+  {w:"between",  t:"preposition", s:"The ball landed <span>between</span> the two trees."},
+  {w:"beyond",   t:"preposition", s:"The stars shine <span>beyond</span> the clouds."},
+  {w:"within",   t:"preposition", s:"The answer is <span>within</span> reach."},
+  {w:"against",  t:"preposition", s:"She leaned <span>against</span> the wall."},
+  {w:"toward",   t:"preposition", s:"He walked <span>toward</span> the bright light."},
+  {w:"through",  t:"preposition", s:"The treasure was buried <span>beneath</span> the oak tree."},
+  {w:"through",  t:"preposition", s:"They swam <span>across</span> the wide river."},
+  {w:"despite",  t:"preposition", s:"<span>Despite</span> the rain, they played outside."},
+  {w:"along",    t:"preposition", s:"We walked <span>along</span> the beach at sunset."},
+  {w:"inside",   t:"preposition", s:"The kitten was <span>inside</span> the box."},
+  {w:"without",  t:"preposition", s:"She left <span>without</span> saying goodbye."},
+
+  // CONJUNCTIONS
+  {w:"and",      t:"conjunction", s:"I like pizza <span>and</span> pasta."},
+  {w:"but",      t:"conjunction", s:"I wanted to go, <span>but</span> it was raining."},
+  {w:"or",       t:"conjunction", s:"Do you want tea <span>or</span> coffee?"},
+  {w:"because",  t:"conjunction", s:"She cried <span>because</span> she was happy."},
+  {w:"although", t:"conjunction", s:"<span>Although</span> it was cold, he went swimming."},
+  {w:"however",  t:"conjunction", s:"I studied hard; <span>however</span>, the test was tough."},
+  {w:"unless",   t:"conjunction", s:"You can't go out <span>unless</span> you finish your dinner."},
+  {w:"since",    t:"conjunction", s:"I've been happy <span>since</span> I got my new puppy."},
+  {w:"while",    t:"conjunction", s:"She read a book <span>while</span> waiting for the bus."},
+  {w:"yet",      t:"conjunction", s:"He tried hard, <span>yet</span> he couldn't open the jar."},
+  {w:"so",       t:"conjunction", s:"It was late, <span>so</span> we decided to go home."},
+  {w:"therefore",t:"conjunction", s:"She studied hard; <span>therefore</span>, she passed."},
+  {w:"neither",  t:"conjunction", s:"<span>Neither</span> the cat nor the dog came inside."},
+  {w:"whether",  t:"conjunction", s:"I don't know <span>whether</span> to laugh or cry."},
+  {w:"whenever", t:"conjunction", s:"<span>Whenever</span> it rains, I feel cozy indoors."},
+
+  // INTERJECTIONS
+  {w:"wow",      t:"interjection", s:"<span>Wow</span>, that was the best game ever!"},
+  {w:"ouch",     t:"interjection", s:"<span>Ouch</span>! That really hurt my finger."},
+  {w:"hey",      t:"interjection", s:"<span>Hey</span>, wait for me at the corner!"},
+  {w:"yikes",    t:"interjection", s:"<span>Yikes</span>, that spider is huge!"},
+  {w:"hooray",   t:"interjection", s:"<span>Hooray</span>! We won the championship!"},
+  {w:"oops",     t:"interjection", s:"<span>Oops</span>, I spilled my juice on the floor."},
+  {w:"bravo",    t:"interjection", s:"<span>Bravo</span>! That was a stunning performance."},
+  {w:"alas",     t:"interjection", s:"<span>Alas</span>, the journey had finally come to an end."},
+  {w:"phew",     t:"interjection", s:"<span>Phew</span>, we just made it before the storm!"},
+  {w:"eureka",   t:"interjection", s:"<span>Eureka</span>! I finally found the answer!"},
+  {w:"shh",      t:"interjection", s:"<span>Shh</span>, the baby is sleeping in the next room."},
+  {w:"ugh",      t:"interjection", s:"<span>Ugh</span>, I forgot my homework again!"},
+  {w:"oh",       t:"interjection", s:"<span>Oh</span>, I didn't expect to see you here!"},
+  {w:"whoa",     t:"interjection", s:"<span>Whoa</span>, that roller coaster was wild!"},
+  {w:"hurrah",   t:"interjection", s:"<span>Hurrah</span>! School is finally over for summer!"},
+];
+
+// ══════════════════════════════════════════════════════════════
+// GAME STATE
+// ══════════════════════════════════════════════════════════════
+let score, correct, wrong, round, streak, bestStreak, queue, answered, timerInterval, diff, totalRounds, timeLimit, musicOn;
+musicOn = true;
+
+const DIFF_CONFIG = {
+  easy:   { rounds: 15, time: 0,    label: 'EASY',   pts: 10 },
+  medium: { rounds: 15, time: 8000, label: 'MEDIUM', pts: 15 },
+  hard:   { rounds: 20, time: 4000, label: 'HARD',   pts: 20 },
+};
+const STREAK_MAX = 5;
+let bgNode = null, bgGain = null;
+
+// ══════════════════════════════════════════════════════════════
+// AUDIO ENGINE
+// ══════════════════════════════════════════════════════════════
+let audioCtx = null;
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playTone(freq, dur, type='sine', vol=0.3, delay=0) {
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = type; osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+    gain.gain.setValueAtTime(vol, ctx.currentTime + delay);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+    osc.start(ctx.currentTime + delay);
+    osc.stop(ctx.currentTime + delay + dur + 0.05);
+  } catch(e) {}
+}
+function playCorrect()  { playTone(523,.12,'sine',.25); playTone(659,.12,'sine',.25,.13); playTone(784,.2,'sine',.25,.26); }
+function playWrong()    { playTone(220,.08,'sawtooth',.2); playTone(180,.2,'sawtooth',.2,.09); }
+function playStreak()   { [523,659,784,1047].forEach((f,i)=>playTone(f,.1,'sine',.2,i*.09)); }
+function playTimeout()  { playTone(300,.05,'square',.15); playTone(250,.15,'square',.15,.06); }
+function playGameOver() { [392,440,523,659,784].forEach((f,i)=>playTone(f,.15,'sine',.22,i*.12)); }
+function playClick()    { playTone(800,.05,'sine',.1); }
+
+function startBgMusic() {
+  if (!musicOn) return;
+  try {
+    const ctx = getCtx();
+    bgGain = ctx.createGain(); bgGain.gain.value = 0.06;
+    bgGain.connect(ctx.destination);
+    const notes = [174.6,196,220,261.6,293.7,349.2,392];
+    let t = ctx.currentTime;
+    function scheduleLoop() {
+      for (let i = 0; i < 16; i++) {
+        const f = notes[Math.floor(Math.random()*notes.length)];
+        const osc = ctx.createOscillator();
+        osc.type = 'sine'; osc.frequency.value = f;
+        osc.connect(bgGain);
+        osc.start(t + i*0.6); osc.stop(t + i*0.6 + 0.4);
+      }
+      t += 16*0.6;
+      bgNode = setTimeout(scheduleLoop, (16*0.6 - 1)*1000);
+    }
+    scheduleLoop();
+  } catch(e) {}
+}
+function stopBgMusic() {
+  if (bgNode) { clearTimeout(bgNode); bgNode = null; }
+  if (bgGain) { try { bgGain.gain.value = 0; } catch(e){} }
+}
+function toggleMusicPref() {
+  musicOn = !musicOn;
+  document.getElementById('music-pref-label').textContent = musicOn ? 'ON' : 'OFF';
+}
+
+// ══════════════════════════════════════════════════════════════
+// SCREENS
+// ══════════════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function showWelcome() {
+  stopBgMusic(); clearInterval(timerInterval);
+  showScreen('screen-welcome');
+}
+
+// ══════════════════════════════════════════════════════════════
+// START GAME
+// ══════════════════════════════════════════════════════════════
+function shuffle(a) { return [...a].sort(() => Math.random() - .5); }
+
+function startGame(difficulty) {
+  playClick();
+  diff = difficulty;
+  const cfg = DIFF_CONFIG[diff];
+  totalRounds = cfg.rounds;
+  timeLimit   = cfg.time;
+  score = correct = wrong = round = streak = bestStreak = 0;
+  answered = false;
+  queue = shuffle(WORDS).slice(0, totalRounds);
+
+  const badge = document.getElementById('diff-badge');
+  badge.textContent = cfg.label;
+  badge.className = `diff-badge ${diff}`;
+
+  document.getElementById('timer-wrap').style.display = timeLimit ? 'block' : 'none';
+
+  const sw = document.getElementById('streak-wrap');
+  sw.innerHTML = '';
+  for (let i = 0; i < STREAK_MAX; i++) {
+    const d = document.createElement('div');
+    d.className = 'streak-dot s-dot'; d.id = `dot-${i}`;
+    sw.appendChild(d);
+  }
+
+  showScreen('screen-game');
+  updateScorebar();
+  startBgMusic();
+  nextWord();
+}
+
+// ══════════════════════════════════════════════════════════════
+// NEXT WORD
+// ══════════════════════════════════════════════════════════════
+function nextWord() {
+  clearInterval(timerInterval);
+  if (round >= totalRounds) { endGame(); return; }
+  answered = false;
+
+  const item = queue[round];
+  document.getElementById('the-word').textContent   = item.w;
+  document.getElementById('example-sent').innerHTML = item.s;
+  document.getElementById('sc-round').textContent   = `${round+1}/${totalRounds}`;
+  document.getElementById('progress-bar').style.width = `${(round/totalRounds)*100}%`;
+
+  setFeedback('neutral','');
+  setButtons(true);
+
+  const card = document.getElementById('word-card');
+  card.classList.remove('card-pop');
+  void card.offsetWidth;
+  card.classList.add('card-pop');
+
+  if (timeLimit) startTimer();
+}
+
+// ══════════════════════════════════════════════════════════════
+// TIMER
+// ══════════════════════════════════════════════════════════════
+function startTimer() {
+  const bar = document.getElementById('timer-bar');
+  const start = Date.now();
+  bar.style.width = '100%';
+  bar.style.background = 'linear-gradient(90deg,#55efc4,#fdcb6e,#fd79a8)';
+  timerInterval = setInterval(() => {
+    const elapsed = Date.now() - start;
+    const pct = Math.max(0, 100 - (elapsed/timeLimit)*100);
+    bar.style.width = pct + '%';
+    if (pct < 30) bar.style.background = '#fd79a8';
+    if (elapsed >= timeLimit) {
+      clearInterval(timerInterval);
+      if (!answered) timeOut();
+    }
+  }, 50);
+}
+
+function timeOut() {
+  answered = true;
+  setButtons(false);
+  playTimeout();
+  const item = queue[round];
+  const label = {preposition:'PREPOSITION',conjunction:'CONJUNCTION',interjection:'INTERJECTION'}[item.t];
+  setFeedback('wrong', `⏰ Time's up! It was a ${label}`);
+  wrong++; streak = 0;
+  updateScorebar(); updateStreakDots();
+  setTimeout(() => { round++; nextWord(); }, 1400);
+}
+
+// ══════════════════════════════════════════════════════════════
+// GUESS
+// ══════════════════════════════════════════════════════════════
+function guess(type, btn) {
+  if (answered) return;
+  answered = true;
+  clearInterval(timerInterval);
+  playClick();
+
+  const item = queue[round];
+  const correct_type = item.t;
+  const label = {preposition:'PREPOSITION',conjunction:'CONJUNCTION',interjection:'INTERJECTION'}[correct_type];
+
+  setButtons(false);
+
+  if (type === correct_type) {
+    score += DIFF_CONFIG[diff].pts;
+    correct++;
+    streak++;
+    if (streak > bestStreak) bestStreak = streak;
+    btn.classList.add('flash-correct');
+    setFeedback('correct', streak >= 3 ? `🔥 Streak x${streak}! +${DIFF_CONFIG[diff].pts}` : `✅ Correct! +${DIFF_CONFIG[diff].pts}`);
+    if (streak === STREAK_MAX) playStreak(); else playCorrect();
+  } else {
+    wrong++;
+    streak = 0;
+    btn.classList.add('flash-wrong');
+    setFeedback('wrong', `❌ It was a ${label}!`);
+    playWrong();
+  }
+
+  updateScorebar();
+  updateStreakDots();
+  setTimeout(() => { round++; nextWord(); }, 1200);
+}
+
+// ══════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════
+function setFeedback(type, msg) {
+  const el = document.getElementById('feedback');
+  el.className = `feedback ${type}`;
+  el.textContent = msg;
+}
+
+function setButtons(enabled) {
+  ['preposition','conjunction','interjection'].forEach(id => {
+    const btn = document.getElementById(`btn-${id}`);
+    if (btn) btn.disabled = !enabled;
+  });
+}
+
+function updateScorebar() {
+  document.getElementById('sc-score').textContent   = score;
+  document.getElementById('sc-correct').textContent = correct;
+  document.getElementById('sc-wrong').textContent   = wrong;
+}
+
+function updateStreakDots() {
+  for (let i = 0; i < STREAK_MAX; i++) {
+    const dot = document.getElementById(`dot-${i}`);
+    if (dot) dot.className = `streak-dot s-dot${i < streak ? ' lit' : ''}`;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// END GAME
+// ══════════════════════════════════════════════════════════════
+function endGame() {
+  stopBgMusic();
+  playGameOver();
+
+  const pct = Math.round((correct / totalRounds) * 100);
+  let grade = '⭐ Keep Practising!';
+  if (pct >= 90) grade = '🏆 Grammar Master!';
+  else if (pct >= 75) grade = '🥇 Excellent!';
+  else if (pct >= 60) grade = '🥈 Good Work!';
+  else if (pct >= 40) grade = '🥉 Not Bad!';
+
+  document.getElementById('end-score').textContent   = `${score} pts`;
+  document.getElementById('end-detail').textContent  = `${correct} correct out of ${totalRounds} (${pct}%)`;
+  document.getElementById('end-grade').textContent   = grade;
+  document.getElementById('end-correct').textContent = correct;
+  document.getElementById('end-wrong').textContent   = wrong;
+  document.getElementById('end-best').textContent    = bestStreak;
+
+  if (pct >= 75) launchConfetti();
+  showScreen('screen-end');
+}
+
+// ══════════════════════════════════════════════════════════════
+// CONFETTI
+// ══════════════════════════════════════════════════════════════
+function launchConfetti() {
+  const colors = ['#fd79a8','#fdcb6e','#a29bfe','#55efc4','#e84393','#fff'];
+  for (let i = 0; i < 80; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.cssText = `
+        left:${Math.random()*100}vw;
+        width:${6+Math.random()*8}px;
+        height:${10+Math.random()*8}px;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        --dur:${1.5+Math.random()*2}s;
+        --rot:${Math.random()*720-360}deg;
+      `;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }, i * 30);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// STARS
+// ══════════════════════════════════════════════════════════════
+(function() {
+  const bg = document.getElementById('stars-bg');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = 1 + Math.random() * 2.5;
+    s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s`;
+    bg.appendChild(s);
+  }
+})();
+</script>
+</body>
+</html>
