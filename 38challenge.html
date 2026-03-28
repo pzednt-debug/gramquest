@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>38 Challenge | PzedArcade</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: linear-gradient(135deg,#0d0d1a 0%,#16213e 50%,#0f3460 100%);
+  min-height: 100vh; font-family: 'Arial Black', Arial, sans-serif;
+  color: #fff; overflow-x: hidden;
+}
+
+/* ── TOP BANNER AD ── */
+.ad-banner {
+  width:100%; max-width:728px; height:90px; margin:0 auto;
+  background:rgba(255,255,255,0.05); border:1px dashed rgba(255,255,255,0.15);
+  display:flex; align-items:center; justify-content:center;
+  color:rgba(255,255,255,0.3); font-size:13px; letter-spacing:2px;
+}
+
+/* ── HEADER ── */
+.header {
+  text-align:center; padding:12px 20px 8px;
+}
+.brand { font-size:14px; color:#a29bfe; letter-spacing:3px; text-transform:uppercase; }
+.title {
+  font-size:52px; font-weight:900; line-height:1;
+  background: linear-gradient(135deg,#f9ca24,#f0932b);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.subtitle { font-size:16px; color:rgba(255,255,255,0.7); margin-top:4px; }
+
+/* ── GAME AREA ── */
+.game-wrap {
+  display:flex; flex-direction:column; align-items:center;
+  padding:10px 20px 20px; gap:14px;
+}
+
+/* Controls bar */
+.controls {
+  display:flex; gap:10px; flex-wrap:wrap; justify-content:center; align-items:center;
+}
+.btn {
+  padding:10px 22px; border-radius:50px; font-size:15px; font-weight:900;
+  border:none; cursor:pointer; letter-spacing:1px; transition:all .15s;
+}
+.btn:active { transform:scale(.95); }
+.btn-purple { background:linear-gradient(135deg,#6c5ce7,#a29bfe); color:#fff; }
+.btn-teal   { background:linear-gradient(135deg,#00b894,#55efc4); color:#1a1a2e; }
+.btn-gold   { background:linear-gradient(135deg,#f9ca24,#f0932b); color:#1a1a2e; }
+.btn-red    { background:linear-gradient(135deg,#e17055,#d63031); color:#fff; }
+.btn-grey   { background:rgba(255,255,255,0.12); color:#fff; border:2px solid rgba(255,255,255,0.2); }
+
+.difficulty-row { display:flex; gap:8px; align-items:center; }
+.diff-label { font-size:13px; color:rgba(255,255,255,0.6); margin-right:4px; }
+.diff-btn {
+  padding:8px 16px; border-radius:30px; font-size:13px; font-weight:900;
+  border:2px solid rgba(255,255,255,0.2); background:transparent; color:rgba(255,255,255,0.6);
+  cursor:pointer; transition:all .15s;
+}
+.diff-btn.active { background:#6c5ce7; border-color:#a29bfe; color:#fff; }
+
+/* Stats bar */
+.stats-bar {
+  display:flex; gap:20px; justify-content:center; flex-wrap:wrap;
+}
+.stat {
+  background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15);
+  border-radius:16px; padding:8px 20px; text-align:center;
+}
+.stat-value { font-size:24px; font-weight:900; color:#f9ca24; }
+.stat-label { font-size:11px; color:rgba(255,255,255,0.5); letter-spacing:2px; text-transform:uppercase; }
+
+/* Message bar */
+.msg-bar {
+  height:32px; display:flex; align-items:center; justify-content:center;
+  font-size:16px; font-weight:700; color:#f9ca24; transition:opacity .3s;
+}
+
+/* Hex grid container */
+.hex-container {
+  position:relative; width:600px; height:450px;
+}
+#hexSvg { width:600px; height:450px; }
+
+.hex-cell {
+  cursor:pointer; transition:all .15s;
+}
+.hex-cell polygon {
+  transition: fill .15s, stroke .15s;
+}
+.hex-cell:hover polygon { stroke:#fff; stroke-width:3; }
+.hex-cell.selected polygon { stroke:#f9ca24; stroke-width:3; fill:rgba(249,202,36,0.2) !important; }
+.hex-cell.correct polygon { fill:rgba(0,184,148,0.35) !important; }
+.hex-cell.wrong polygon { fill:rgba(225,112,85,0.35) !important; }
+.hex-cell.fixed polygon { fill:rgba(108,92,231,0.3) !important; }
+.hex-cell.empty-hover polygon { fill:rgba(255,255,255,0.08); }
+
+.hex-text {
+  font-family:'Arial Black',Arial; font-weight:900; font-size:22px;
+  fill:#fff; text-anchor:middle; dominant-baseline:central;
+  pointer-events:none; user-select:none;
+}
+.hex-text.hint-text { fill:#a29bfe; font-size:18px; }
+
+/* Line indicators */
+.line-dot {
+  transition: fill .3s;
+}
+
+/* Number tray */
+.tray-wrap {
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+}
+.tray-label { font-size:13px; color:rgba(255,255,255,0.5); letter-spacing:2px; text-transform:uppercase; }
+.tray {
+  display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+  max-width:600px; padding:12px 16px;
+  background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
+  border-radius:20px;
+}
+.tile {
+  width:46px; height:46px; border-radius:12px; display:flex;
+  align-items:center; justify-content:center; font-size:18px; font-weight:900;
+  cursor:pointer; transition:all .15s; user-select:none;
+  background:rgba(255,255,255,0.12); border:2px solid rgba(255,255,255,0.2); color:#fff;
+}
+.tile:hover { background:rgba(162,155,254,0.3); border-color:#a29bfe; transform:scale(1.1); }
+.tile.selected { background:#6c5ce7; border-color:#a29bfe; color:#fff; transform:scale(1.1); box-shadow:0 0 16px rgba(108,92,231,0.6); }
+.tile.used { opacity:0.2; pointer-events:none; }
+
+/* Win overlay */
+.win-overlay {
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85);
+  z-index:100; align-items:center; justify-content:center;
+}
+.win-overlay.show { display:flex; }
+.win-card {
+  background:linear-gradient(135deg,#16213e,#0f3460);
+  border:3px solid #f9ca24; border-radius:30px; padding:50px 60px;
+  text-align:center; max-width:480px;
+}
+.win-title { font-size:60px; font-weight:900; color:#f9ca24; }
+.win-sub { font-size:20px; color:rgba(255,255,255,0.8); margin:12px 0 8px; }
+.win-time { font-size:36px; font-weight:900; color:#a29bfe; margin-bottom:24px; }
+.win-btns { display:flex; gap:12px; justify-content:center; }
+
+/* How to play */
+.how-to {
+  max-width:600px; background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1); border-radius:20px;
+  padding:16px 24px; font-size:14px; color:rgba(255,255,255,0.65);
+  line-height:1.7; text-align:center;
+}
+.how-to strong { color:#a29bfe; }
+
+/* Footer */
+.footer {
+  text-align:center; padding:16px; font-size:12px; color:rgba(255,255,255,0.3);
+}
+
+/* Confetti */
+.confetti-piece {
+  position:fixed; width:10px; height:10px; border-radius:2px;
+  animation:confetti-fall 3s ease-in forwards;
+  pointer-events:none; z-index:200;
+}
+@keyframes confetti-fall {
+  0% { transform:translateY(-20px) rotate(0deg); opacity:1; }
+  100% { transform:translateY(100vh) rotate(720deg); opacity:0; }
+}
+
+/* Side ad */
+.layout { display:flex; justify-content:center; align-items:flex-start; gap:20px; }
+.side-ad {
+  width:160px; height:600px; background:rgba(255,255,255,0.05);
+  border:1px dashed rgba(255,255,255,0.15); border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  color:rgba(255,255,255,0.3); font-size:12px; letter-spacing:1px;
+  writing-mode:vertical-rl; margin-top:40px; flex-shrink:0;
+}
+@media(max-width:900px) { .side-ad { display:none; } }
+</style>
+</head>
+<body>
+
+<!-- Top Ad -->
+<div class="ad-banner">
+  <!-- Google AdSense: data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" -->
+  ADVERTISEMENT
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="brand">🎮 PzedArcade</div>
+  <div class="title">38 Challenge</div>
+  <div class="subtitle">Fill the hexagon — every line must add up to <strong style="color:#f9ca24">38</strong></div>
+</div>
+
+<!-- Layout with side ads -->
+<div class="layout">
+  <div class="side-ad">AD SPACE</div>
+
+  <!-- Main game -->
+  <div class="game-wrap">
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="btn btn-teal" onclick="newGame()">🔀 New Puzzle</button>
+      <button class="btn btn-gold" onclick="giveHint()">💡 Hint</button>
+      <button class="btn btn-purple" onclick="checkSolution()">✅ Check</button>
+      <button class="btn btn-grey" onclick="resetBoard()">↩️ Reset</button>
+    </div>
+
+    <div class="difficulty-row">
+      <span class="diff-label">Difficulty:</span>
+      <button class="diff-btn active" onclick="setDiff(0,this)">Easy (9 clues)</button>
+      <button class="diff-btn" onclick="setDiff(1,this)">Medium (6)</button>
+      <button class="diff-btn" onclick="setDiff(2,this)">Hard (3)</button>
+      <button class="diff-btn" onclick="setDiff(3,this)">Expert (0)</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-value" id="timerVal">0:00</div><div class="stat-label">Time</div></div>
+      <div class="stat"><div class="stat-value" id="linesVal">0/15</div><div class="stat-label">Lines ✓</div></div>
+      <div class="stat"><div class="stat-value" id="hintsVal">3</div><div class="stat-label">Hints Left</div></div>
+      <div class="stat"><div class="stat-value" id="puzzleVal">1/12</div><div class="stat-label">Puzzle</div></div>
+    </div>
+
+    <!-- Message -->
+    <div class="msg-bar" id="msgBar">Place numbers 1–19 so every line sums to 38</div>
+
+    <!-- Hex Grid -->
+    <div class="hex-container">
+      <svg id="hexSvg" viewBox="0 0 600 450"></svg>
+    </div>
+
+    <!-- Number Tray -->
+    <div class="tray-wrap">
+      <div class="tray-label">Available Numbers</div>
+      <div class="tray" id="tray"></div>
+    </div>
+
+    <!-- How to play -->
+    <div class="how-to">
+      <strong>How to play:</strong> Click a number from the tray, then click an empty hexagon to place it.
+      Click a placed number to remove it. Every row and diagonal line must add up to exactly <strong>38</strong>.
+      There are 12 unique arrangements — can you find them all?
+    </div>
+
+  </div><!-- end main game -->
+
+  <div class="side-ad">AD SPACE</div>
+</div><!-- end layout -->
+
+<div class="footer">© 2024 PzedArcade · Free to Play · <a href="gramquest_level1_full.html" style="color:#a29bfe;">GramQuest</a></div>
+
+<!-- Win Overlay -->
+<div class="win-overlay" id="winOverlay">
+  <div class="win-card">
+    <div class="win-title">🎉 SOLVED!</div>
+    <div class="win-sub">Amazing work! You cracked the 38 Challenge!</div>
+    <div class="win-time" id="winTime">Time: 0:00</div>
+    <div class="win-btns">
+      <button class="btn btn-teal" onclick="newGame(); document.getElementById('winOverlay').classList.remove('show')">▶ Next Puzzle</button>
+      <button class="btn btn-grey" onclick="document.getElementById('winOverlay').classList.remove('show')">✕ Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── ALL 12 SOLUTIONS ──
+const SOLUTIONS = [
+  [3,17,18,19,7,1,11,16,2,5,6,9,12,4,8,14,10,13,15],
+  [16,19,3,12,2,7,17,10,4,5,1,18,13,8,6,11,15,14,9],
+  [10,12,16,13,4,2,19,15,8,5,7,3,14,6,1,17,9,11,18],
+  [15,13,10,14,8,4,12,9,6,5,2,16,11,1,7,19,18,17,3],
+  [9,14,15,11,6,8,13,18,1,5,4,10,17,7,2,12,3,19,16],
+  [18,11,9,17,1,6,14,3,7,5,8,15,19,2,4,13,16,12,10],
+  [16,12,10,19,2,4,13,3,7,5,8,15,17,1,6,14,18,11,9],
+  [3,19,16,17,7,2,12,18,1,5,4,10,11,6,8,13,9,14,15],
+  [18,17,3,11,1,7,19,9,6,5,2,16,14,8,4,12,15,13,10],
+  [9,11,18,14,6,1,17,15,8,5,7,3,13,4,2,19,10,12,16],
+  [15,14,9,13,8,6,11,10,4,5,1,18,12,2,7,17,16,19,3],
+  [10,13,15,12,4,8,14,16,2,5,6,9,19,7,1,11,3,17,18],
+];
+
+// Lines that must sum to 38
+const LINES = [
+  [0,1,2],[3,4,5,6],[7,8,9,10,11],[12,13,14,15],[16,17,18],
+  [16,12,7],[17,13,8,3],[18,14,9,4,0],[15,10,5,1],[11,6,2],
+  [0,3,7],[1,4,8,12],[2,5,9,13,16],[6,10,14,17],[11,15,18],
+];
+
+// Hex cell centers [cx, cy] for positions 0-18
+const R = 52; // circumradius
+const CX = 300, CY = 228; // center of grid
+const DX = R * Math.sqrt(3); // horizontal spacing ≈ 90
+const DY = R * 1.5;          // vertical spacing = 78
+
+const CELL_CENTERS = [];
+const rowOffsets = [
+  {count:3, dx:-1},   // row 0: 3 cells
+  {count:4, dx:-1.5}, // row 1: 4 cells
+  {count:5, dx:-2},   // row 2: 5 cells (middle)
+  {count:4, dx:-1.5}, // row 3: 4 cells
+  {count:3, dx:-1},   // row 4: 3 cells
+];
+const rowYOffsets = [-2,-1,0,1,2];
+rowOffsets.forEach((row, ri) => {
+  for (let ci = 0; ci < row.count; ci++) {
+    const x = CX + (row.dx + ci) * DX;
+    const y = CY + rowYOffsets[ri] * DY;
+    CELL_CENTERS.push([x, y]);
+  }
+});
+
+// ── Game state ──
+let solution = [];
+let grid = new Array(19).fill(0);   // player-placed values
+let fixed = new Array(19).fill(false); // pre-filled clue cells
+let selectedNum = 0;
+let selectedCell = -1;
+let hintsLeft = 3;
+let diffLevel = 0; // 0=easy(9), 1=medium(6), 2=hard(3), 3=expert(0)
+let clueCount = [9, 6, 3, 0];
+let timerSecs = 0;
+let timerInterval = null;
+let solved = false;
+let puzzleIdx = 0;
+let usedPuzzles = new Set();
+
+// ── Audio ──
+const AC = new (window.AudioContext || window.webkitAudioContext)();
+function playTone(freq, type='sine', dur=0.12, vol=0.15) {
+  const o = AC.createOscillator();
+  const g = AC.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(vol, AC.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur);
+  o.connect(g); g.connect(AC.destination);
+  o.start(); o.stop(AC.currentTime + dur);
+}
+function playPlace()   { playTone(440,'triangle',0.1,0.12); }
+function playRemove()  { playTone(300,'triangle',0.1,0.1); }
+function playCorrect() { [523,659,784].forEach((f,i)=>setTimeout(()=>playTone(f,'sine',0.2,0.15),i*80)); }
+function playWin()     { [523,659,784,1046].forEach((f,i)=>setTimeout(()=>playTone(f,'sine',0.4,0.2),i*100)); }
+function playError()   { playTone(220,'sawtooth',0.15,0.2); }
+function playHint()    { playTone(880,'sine',0.15,0.15); }
+
+// ── Timer ──
+function startTimer() {
+  clearInterval(timerInterval);
+  timerSecs = 0;
+  updateTimer();
+  timerInterval = setInterval(() => { timerSecs++; updateTimer(); }, 1000);
+}
+function updateTimer() {
+  const m = Math.floor(timerSecs/60), s = timerSecs%60;
+  document.getElementById('timerVal').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+}
+function stopTimer() { clearInterval(timerInterval); }
+
+// ── Generate SVG ──
+function hexPoints(cx, cy, r) {
+  const pts = [];
+  for (let i = 0; i < 6; i++) {
+    const a = Math.PI/180 * (60*i - 30);
+    pts.push(`${cx + r*Math.cos(a)},${cy + r*Math.sin(a)}`);
+  }
+  return pts.join(' ');
+}
+
+function buildSvg() {
+  const svg = document.getElementById('hexSvg');
+  svg.innerHTML = '';
+
+  // Draw line indicators (dots around edges) — optional decorative elements
+  // Draw cells
+  CELL_CENTERS.forEach(([cx,cy], i) => {
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','hex-cell');
+    g.setAttribute('id',`cell-${i}`);
+    g.setAttribute('data-pos',i);
+
+    const poly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    poly.setAttribute('points', hexPoints(cx, cy, R-3));
+    poly.setAttribute('fill','rgba(255,255,255,0.07)');
+    poly.setAttribute('stroke','rgba(255,255,255,0.2)');
+    poly.setAttribute('stroke-width','1.5');
+
+    const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+    txt.setAttribute('x', cx);
+    txt.setAttribute('y', cy);
+    txt.setAttribute('class','hex-text');
+    txt.setAttribute('id',`txt-${i}`);
+    txt.textContent = '';
+
+    // Position number (small, faint)
+    const posNum = document.createElementNS('http://www.w3.org/2000/svg','text');
+    posNum.setAttribute('x', cx);
+    posNum.setAttribute('y', cy + R - 14);
+    posNum.setAttribute('text-anchor','middle');
+    posNum.setAttribute('font-size','9');
+    posNum.setAttribute('fill','rgba(255,255,255,0.15)');
+    posNum.setAttribute('font-family','Arial');
+    posNum.textContent = i;
+
+    g.appendChild(poly);
+    g.appendChild(txt);
+    g.appendChild(posNum);
+    g.addEventListener('click', () => onCellClick(i));
+    svg.appendChild(g);
+  });
+
+  // Line sum labels — draw line indicator circles around perimeter
+  drawLineLabels(svg);
+}
+
+function drawLineLabels(svg) {
+  // We'll draw small sum indicators near each line's endpoint
+  const lineColors = ['#f9ca24','#a29bfe','#55efc4'];
+  // Not drawing labels for now — kept clean
+}
+
+// ── Update cell visuals ──
+function updateCell(i) {
+  const g = document.getElementById(`cell-${i}`);
+  const poly = g.querySelector('polygon');
+  const txt = document.getElementById(`txt-${i}`);
+  const val = grid[i];
+
+  // Clear classes
+  g.className.baseVal = 'hex-cell';
+  poly.setAttribute('fill','rgba(255,255,255,0.07)');
+
+  if (fixed[i]) {
+    g.className.baseVal += ' fixed';
+    poly.setAttribute('fill','rgba(108,92,231,0.25)');
+    poly.setAttribute('stroke','rgba(162,155,254,0.5)');
+    txt.setAttribute('class','hex-text hint-text');
+  } else {
+    poly.setAttribute('stroke','rgba(255,255,255,0.2)');
+    txt.setAttribute('class','hex-text');
+  }
+
+  txt.textContent = val ? val : '';
+}
+
+function refreshAllCells() {
+  for (let i=0;i<19;i++) updateCell(i);
+  updateLineStatus();
+  updateStats();
+}
+
+// ── Line status ──
+function updateLineStatus() {
+  let correct = 0;
+  LINES.forEach((line, li) => {
+    const vals = line.map(p => grid[p]).filter(v => v > 0);
+    const total = vals.reduce((a,b)=>a+b,0);
+    const full = vals.length === line.length;
+    if (full && total === 38) correct++;
+  });
+  document.getElementById('linesVal').textContent = `${correct}/15`;
+
+  // Color cells based on lines
+  // Reset all non-fixed cells to default
+  for (let i=0;i<19;i++) {
+    const g = document.getElementById(`cell-${i}`);
+    const poly = g.querySelector('polygon');
+    if (!fixed[i] && grid[i] > 0) {
+      poly.setAttribute('fill','rgba(255,255,255,0.12)');
+    }
+  }
+
+  // Highlight complete-and-correct lines
+  LINES.forEach(line => {
+    const vals = line.map(p => grid[p]);
+    const full = vals.every(v => v > 0);
+    const total = vals.reduce((a,b)=>a+b,0);
+    if (full) {
+      const color = total===38 ? 'rgba(0,184,148,0.35)' : 'rgba(225,112,85,0.25)';
+      line.forEach(p => {
+        const poly = document.getElementById(`cell-${p}`).querySelector('polygon');
+        poly.setAttribute('fill', color);
+      });
+    }
+  });
+
+  return correct;
+}
+
+// ── Stats ──
+function updateStats() {
+  const filled = grid.filter(v => v > 0).length;
+  document.getElementById('hintsVal').textContent = hintsLeft;
+  document.getElementById('puzzleVal').textContent = `${puzzleIdx+1}/12`;
+  updateTray();
+}
+
+// ── Tray ──
+function buildTray() {
+  const tray = document.getElementById('tray');
+  tray.innerHTML = '';
+  for (let n=1; n<=19; n++) {
+    const div = document.createElement('div');
+    div.className = 'tile';
+    div.id = `tile-${n}`;
+    div.textContent = n;
+    div.addEventListener('click', () => onTileClick(n));
+    tray.appendChild(div);
+  }
+}
+
+function updateTray() {
+  const usedNums = new Set(grid.filter(v => v > 0));
+  for (let n=1; n<=19; n++) {
+    const el = document.getElementById(`tile-${n}`);
+    if (!el) continue;
+    el.className = 'tile';
+    if (usedNums.has(n)) el.className += ' used';
+    else if (selectedNum === n) el.className += ' selected';
+  }
+}
+
+// ── Click handlers ──
+function onTileClick(n) {
+  if (AC.state === 'suspended') AC.resume();
+  if (grid.includes(n)) return; // already placed
+  if (selectedNum === n) {
+    selectedNum = 0;
+  } else {
+    selectedNum = n;
+  }
+  selectedCell = -1;
+  updateTray();
+  setMsg('');
+}
+
+function onCellClick(i) {
+  if (AC.state === 'suspended') AC.resume();
+  if (solved) return;
+
+  if (selectedNum > 0) {
+    // Place number if cell is empty and not fixed
+    if (fixed[i]) {
+      setMsg('That cell is a clue — you can\'t change it!', '#e17055');
+      playError();
+      return;
+    }
+    if (grid[i] === 0) {
+      grid[i] = selectedNum;
+      selectedNum = 0;
+      playPlace();
+      updateCell(i);
+      updateLineStatus();
+      updateTray();
+      checkAutoWin();
+    } else {
+      // Swap: remove current, place new
+      selectedNum = grid[i]; // pick up old
+      // Actually: place new, put old back
+      const old = grid[i];
+      grid[i] = selectedNum === old ? 0 : selectedNum;
+      // Simplified: just remove existing and let user re-place
+      grid[i] = 0;
+      updateCell(i);
+      updateTray();
+      setMsg('Number removed — pick again', '#a29bfe');
+      playRemove();
+      // Then re-place if different number was selected
+    }
+  } else {
+    // No number selected: click cell to remove its value
+    if (!fixed[i] && grid[i] > 0) {
+      const n = grid[i];
+      grid[i] = 0;
+      selectedNum = n; // pick it up
+      playRemove();
+      updateCell(i);
+      updateLineStatus();
+      updateTray();
+      setMsg(`${n} picked up — click a cell to place it`);
+    }
+  }
+}
+
+// ── Check for automatic win ──
+function checkAutoWin() {
+  if (grid.every(v => v > 0)) {
+    const correct = updateLineStatus();
+    if (correct === 15) {
+      triggerWin();
+    }
+  }
+}
+
+// ── Manual check ──
+function checkSolution() {
+  if (AC.state === 'suspended') AC.resume();
+  const filled = grid.filter(v => v > 0).length;
+  if (filled < 19) {
+    setMsg(`Fill all 19 cells first! (${19-filled} remaining)`, '#f9ca24');
+    playError();
+    return;
+  }
+  const correct = updateLineStatus();
+  if (correct === 15) {
+    triggerWin();
+  } else {
+    setMsg(`${correct}/15 lines correct — keep going!`, '#e17055');
+    playError();
+  }
+}
+
+function triggerWin() {
+  solved = true;
+  stopTimer();
+  playWin();
+  launchConfetti();
+  const m = Math.floor(timerSecs/60), s = timerSecs%60;
+  const timeStr = `${m}:${s.toString().padStart(2,'0')}`;
+  document.getElementById('winTime').textContent = `Time: ${timeStr}`;
+  setTimeout(() => {
+    document.getElementById('winOverlay').classList.add('show');
+  }, 800);
+}
+
+// ── Hint ──
+function giveHint() {
+  if (AC.state === 'suspended') AC.resume();
+  if (hintsLeft <= 0) { setMsg('No hints left!', '#e17055'); return; }
+  if (solved) return;
+  // Find an empty non-fixed cell
+  const empty = [];
+  for (let i=0; i<19; i++) {
+    if (!fixed[i] && grid[i] === 0) empty.push(i);
+  }
+  if (empty.length === 0) { setMsg('All cells filled — press Check!', '#f9ca24'); return; }
+  const i = empty[Math.floor(Math.random()*empty.length)];
+  grid[i] = solution[i];
+  fixed[i] = true; // treat hint as fixed
+  hintsLeft--;
+  playHint();
+  updateCell(i);
+  updateLineStatus();
+  updateStats();
+  setMsg(`Hint used! ${hintsLeft} remaining`, '#f9ca24');
+}
+
+// ── Reset ──
+function resetBoard() {
+  if (AC.state === 'suspended') AC.resume();
+  for (let i=0; i<19; i++) {
+    if (!fixed[i]) grid[i] = 0;
+  }
+  selectedNum = 0;
+  refreshAllCells();
+  setMsg('Board reset — try again!');
+}
+
+// ── New game ──
+function newGame(diffOverride) {
+  if (AC.state === 'suspended') AC.resume();
+  solved = false;
+  selectedNum = 0;
+
+  // Pick a puzzle not recently used
+  let tries = 0;
+  do {
+    puzzleIdx = Math.floor(Math.random()*12);
+    tries++;
+  } while (usedPuzzles.has(puzzleIdx) && tries < 20);
+  if (usedPuzzles.size >= 12) usedPuzzles.clear();
+  usedPuzzles.add(puzzleIdx);
+
+  solution = SOLUTIONS[puzzleIdx];
+  grid = new Array(19).fill(0);
+  fixed = new Array(19).fill(false);
+
+  const clues = clueCount[diffLevel];
+  if (clues > 0) {
+    // Pick random cells to pre-fill, spread across grid
+    const positions = [...Array(19).keys()];
+    // Shuffle
+    for (let i=positions.length-1; i>0; i--) {
+      const j = Math.floor(Math.random()*(i+1));
+      [positions[i],positions[j]] = [positions[j],positions[i]];
+    }
+    positions.slice(0,clues).forEach(p => {
+      grid[p] = solution[p];
+      fixed[p] = true;
+    });
+  }
+
+  hintsLeft = 3;
+  startTimer();
+  refreshAllCells();
+  setMsg('New puzzle loaded — good luck!');
+}
+
+function setDiff(level, btn) {
+  diffLevel = level;
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  newGame();
+}
+
+// ── Message ──
+function setMsg(text, color='#f9ca24') {
+  const el = document.getElementById('msgBar');
+  el.textContent = text;
+  el.style.color = color;
+}
+
+// ── Confetti ──
+function launchConfetti() {
+  const colors = ['#f9ca24','#6c5ce7','#00b894','#e17055','#a29bfe','#55efc4'];
+  for (let i=0; i<60; i++) {
+    setTimeout(() => {
+      const c = document.createElement('div');
+      c.className = 'confetti-piece';
+      c.style.left = Math.random()*100+'vw';
+      c.style.top = '-20px';
+      c.style.background = colors[Math.floor(Math.random()*colors.length)];
+      c.style.width = (6+Math.random()*10)+'px';
+      c.style.height = (6+Math.random()*10)+'px';
+      c.style.animationDuration = (2+Math.random()*2)+'s';
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 4000);
+    }, i*30);
+  }
+}
+
+// ── Init ──
+buildSvg();
+buildTray();
+newGame();
+</script>
+</body>
+</html>

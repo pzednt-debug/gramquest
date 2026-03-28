@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LexDrop | PzedArcade</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: linear-gradient(135deg,#0d0d1a 0%,#1a0a2e 50%,#0f1f3d 100%);
+  min-height:100vh; font-family:'Arial Black',Arial,sans-serif; color:#fff;
+  overflow-x:hidden;
+}
+
+/* Ad banners */
+.ad-banner {
+  width:100%; max-width:728px; height:90px; margin:0 auto;
+  background:rgba(255,255,255,0.04); border:1px dashed rgba(255,255,255,0.12);
+  display:flex; align-items:center; justify-content:center;
+  color:rgba(255,255,255,0.25); font-size:12px; letter-spacing:2px;
+}
+
+/* Header */
+.header {
+  text-align:center; padding:10px 20px 6px;
+}
+.brand { font-size:13px; color:#a29bfe; letter-spacing:3px; text-transform:uppercase; }
+.title-row { display:flex; align-items:baseline; justify-content:center; gap:6px; }
+.lex  { font-size:56px; font-weight:900; color:#f9ca24; }
+.drop { font-size:56px; font-weight:900; color:#a29bfe; }
+.subtitle { font-size:15px; color:rgba(255,255,255,0.65); margin-top:2px; }
+
+/* Layout */
+.layout { display:flex; justify-content:center; align-items:flex-start; gap:18px; padding:8px 20px 20px; }
+.side-ad {
+  width:160px; min-height:500px; background:rgba(255,255,255,0.04);
+  border:1px dashed rgba(255,255,255,0.12); border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  color:rgba(255,255,255,0.25); font-size:11px; letter-spacing:1px;
+  writing-mode:vertical-rl; flex-shrink:0;
+}
+@media(max-width:900px) { .side-ad { display:none; } }
+
+/* Main game panel */
+.game-panel {
+  display:flex; flex-direction:column; align-items:center; gap:12px;
+  max-width:580px; width:100%;
+}
+
+/* Stats */
+.stats-bar {
+  display:flex; gap:12px; flex-wrap:wrap; justify-content:center;
+}
+.stat {
+  background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.14);
+  border-radius:14px; padding:7px 18px; text-align:center; min-width:80px;
+}
+.stat-value { font-size:24px; font-weight:900; color:#f9ca24; line-height:1; }
+.stat-label { font-size:10px; color:rgba(255,255,255,0.45); letter-spacing:2px; text-transform:uppercase; margin-top:2px; }
+
+/* Drop zone */
+.drop-zone {
+  width:560px; height:180px; position:relative;
+  background:rgba(255,255,255,0.04); border:1.5px solid rgba(255,255,255,0.1);
+  border-radius:16px; overflow:hidden;
+}
+.drop-label {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  font-size:14px; color:rgba(255,255,255,0.2); letter-spacing:2px;
+  text-transform:uppercase; pointer-events:none;
+}
+.falling-letter {
+  position:absolute; width:52px; height:52px;
+  border-radius:12px; display:flex; align-items:center; justify-content:center;
+  font-size:24px; font-weight:900; pointer-events:none;
+  transition:top 0.05s linear;
+}
+.falling-letter .pt { font-size:10px; position:absolute; bottom:3px; right:5px; font-weight:400; }
+
+/* Tray */
+.tray-section { display:flex; flex-direction:column; align-items:center; gap:8px; width:100%; }
+.tray-label-row {
+  display:flex; justify-content:space-between; align-items:center; width:560px;
+}
+.tray-label { font-size:12px; color:rgba(255,255,255,0.45); letter-spacing:2px; text-transform:uppercase; }
+.tray-overflow { font-size:12px; color:#e17055; }
+
+.tray {
+  display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-start;
+  width:560px; min-height:70px; max-height:160px; padding:10px 12px;
+  background:rgba(255,255,255,0.06); border:1.5px solid rgba(255,255,255,0.14);
+  border-radius:16px; overflow-y:auto;
+}
+.letter-tile {
+  width:52px; height:62px; border-radius:12px; display:flex;
+  flex-direction:column; align-items:center; justify-content:center;
+  font-size:26px; font-weight:900; cursor:pointer; transition:all .12s;
+  user-select:none; position:relative; flex-shrink:0;
+  border:2px solid rgba(255,255,255,0.2);
+}
+.letter-tile .tile-pt {
+  font-size:10px; font-weight:400; color:rgba(255,255,255,0.6);
+  position:absolute; bottom:4px; right:6px;
+}
+.letter-tile:hover { transform:scale(1.08) translateY(-4px); }
+.letter-tile.sel {
+  border-color:#f9ca24; box-shadow:0 0 16px rgba(249,202,36,0.5);
+  transform:scale(1.08) translateY(-8px);
+}
+.letter-tile.correct-anim {
+  animation:flashGreen .4s ease;
+}
+@keyframes flashGreen {
+  0%,100% { background:inherit; }
+  50% { background:rgba(0,184,148,0.7) !important; }
+}
+
+/* Word builder */
+.word-builder {
+  width:560px; display:flex; flex-direction:column; gap:8px;
+}
+.word-display-row {
+  display:flex; gap:8px; align-items:center;
+}
+.word-display {
+  flex:1; min-height:60px; background:rgba(255,255,255,0.06);
+  border:2px solid rgba(255,255,255,0.15); border-radius:14px;
+  padding:8px 16px; display:flex; align-items:center; gap:6px;
+  flex-wrap:wrap;
+}
+.word-display.valid-word { border-color:#00b894; box-shadow:0 0 16px rgba(0,184,148,0.3); }
+.word-display.invalid-word { border-color:#e17055; }
+.word-char {
+  font-size:30px; font-weight:900; color:#f9ca24;
+  animation:popIn .15s ease;
+}
+@keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+.word-placeholder { font-size:16px; color:rgba(255,255,255,0.2); }
+.word-score-preview { font-size:28px; font-weight:900; color:#55efc4; min-width:60px; text-align:right; }
+
+.action-row { display:flex; gap:10px; }
+.btn {
+  padding:12px 24px; border-radius:50px; font-size:16px; font-weight:900;
+  border:none; cursor:pointer; letter-spacing:1px; transition:all .12s;
+  flex:1;
+}
+.btn:active { transform:scale(.95); }
+.btn-play   { background:linear-gradient(135deg,#00b894,#55efc4); color:#1a1a2e; }
+.btn-clear  { background:rgba(255,255,255,0.1); color:#fff; border:2px solid rgba(255,255,255,0.2); }
+.btn-back   { background:rgba(162,155,254,0.2); color:#a29bfe; border:2px solid rgba(162,155,254,0.3); max-width:80px; flex:none; }
+
+/* Message */
+.msg-bar {
+  height:28px; font-size:16px; font-weight:700; text-align:center;
+  color:#f9ca24; transition:opacity .3s;
+}
+
+/* Level progress */
+.level-bar-wrap {
+  width:560px; display:flex; flex-direction:column; gap:4px;
+}
+.level-info { display:flex; justify-content:space-between; font-size:12px; color:rgba(255,255,255,0.5); }
+.level-bar-bg {
+  width:100%; height:8px; background:rgba(255,255,255,0.1); border-radius:4px;
+}
+.level-bar-fill {
+  height:100%; border-radius:4px;
+  background:linear-gradient(90deg,#6c5ce7,#a29bfe);
+  transition:width .5s ease;
+}
+
+/* How to play */
+.how-to {
+  width:560px; background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.1); border-radius:14px;
+  padding:14px 20px; font-size:13px; color:rgba(255,255,255,0.6);
+  line-height:1.7;
+}
+.how-to strong { color:#a29bfe; }
+
+/* Game over overlay */
+.gameover-overlay {
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88);
+  z-index:100; align-items:center; justify-content:center;
+}
+.gameover-overlay.show { display:flex; }
+.gameover-card {
+  background:linear-gradient(135deg,#1a0a2e,#0f1f3d);
+  border:3px solid #e17055; border-radius:30px; padding:40px 55px;
+  text-align:center; max-width:440px;
+}
+.gameover-title { font-size:52px; font-weight:900; color:#e17055; }
+.gameover-sub   { font-size:18px; color:rgba(255,255,255,0.75); margin:10px 0; }
+.gameover-score { font-size:48px; font-weight:900; color:#f9ca24; margin:8px 0 20px; }
+.gameover-btns  { display:flex; gap:12px; justify-content:center; }
+.btn-restart { background:linear-gradient(135deg,#6c5ce7,#a29bfe); color:#fff; }
+.btn-grey    { background:rgba(255,255,255,0.1); color:#fff; border:2px solid rgba(255,255,255,0.2); }
+
+/* Letter colors by point value */
+.pt1 { background:rgba(255,255,255,0.14); }
+.pt2 { background:rgba(108,92,231,0.3); }
+.pt3 { background:rgba(0,100,200,0.35); }
+.pt4 { background:rgba(0,150,100,0.35); }
+.pt5 { background:rgba(200,150,0,0.35); }
+.pt8 { background:rgba(200,80,0,0.35); }
+.pt10{ background:rgba(200,30,30,0.4); }
+
+/* Confetti */
+.confetti-piece {
+  position:fixed; border-radius:2px;
+  animation:cffall 3s ease-in forwards;
+  pointer-events:none; z-index:200;
+}
+@keyframes cffall {
+  0% { transform:translateY(-20px) rotate(0deg); opacity:1; }
+  100% { transform:translateY(100vh) rotate(540deg); opacity:0; }
+}
+
+/* Start screen */
+.start-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:50;
+  display:flex; align-items:center; justify-content:center;
+}
+.start-card {
+  background:linear-gradient(135deg,#16213e,#0f3460);
+  border:3px solid #a29bfe; border-radius:30px; padding:50px 60px;
+  text-align:center; max-width:480px;
+}
+.start-logo { font-size:72px; font-weight:900; }
+.start-logo .l { color:#f9ca24; }
+.start-logo .d { color:#a29bfe; }
+.start-tagline { font-size:18px; color:rgba(255,255,255,0.7); margin:12px 0 28px; line-height:1.5; }
+.start-rules { text-align:left; margin:0 0 28px; font-size:14px; color:rgba(255,255,255,0.6); line-height:1.8; }
+.start-rules li { margin-left:16px; }
+.btn-start { background:linear-gradient(135deg,#f9ca24,#f0932b); color:#1a1a2e; font-size:20px; padding:16px 48px; border-radius:50px; border:none; cursor:pointer; font-weight:900; }
+.footer { text-align:center; padding:12px; font-size:12px; color:rgba(255,255,255,0.3); }
+</style>
+</head>
+<body>
+
+<!-- Top Ad -->
+<div class="ad-banner">ADVERTISEMENT <!-- AdSense slot --></div>
+
+<!-- Header -->
+<div class="header">
+  <div class="brand">🎮 PzedArcade</div>
+  <div class="title-row"><span class="lex">Lex</span><span class="drop">Drop</span></div>
+  <div class="subtitle">Letters fall — you form words — beat the clock!</div>
+</div>
+
+<!-- Layout -->
+<div class="layout">
+  <div class="side-ad">AD SPACE</div>
+
+  <div class="game-panel">
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-value" id="scoreVal">0</div><div class="stat-label">Score</div></div>
+      <div class="stat"><div class="stat-value" id="levelVal">1</div><div class="stat-label">Level</div></div>
+      <div class="stat"><div class="stat-value" id="wordsVal">0</div><div class="stat-label">Words</div></div>
+      <div class="stat"><div class="stat-value" id="timerVal">60</div><div class="stat-label">⏱ Time</div></div>
+    </div>
+
+    <!-- Level progress -->
+    <div class="level-bar-wrap">
+      <div class="level-info">
+        <span>Level <span id="levelInfo">1</span></span>
+        <span><span id="levelPts">0</span> / <span id="levelTarget">500</span> pts</span>
+      </div>
+      <div class="level-bar-bg"><div class="level-bar-fill" id="levelBar" style="width:0%"></div></div>
+    </div>
+
+    <!-- Drop zone (falling letters animation) -->
+    <div class="drop-zone" id="dropZone">
+      <div class="drop-label" id="dropLabel">Letters dropping...</div>
+    </div>
+
+    <!-- Tray -->
+    <div class="tray-section">
+      <div class="tray-label-row">
+        <span class="tray-label">Your Letters</span>
+        <span class="tray-overflow" id="trayOverflow"></span>
+      </div>
+      <div class="tray" id="tray"></div>
+    </div>
+
+    <!-- Word builder -->
+    <div class="word-builder">
+      <div class="word-display-row">
+        <div class="word-display" id="wordDisplay">
+          <span class="word-placeholder">Select letters to form a word...</span>
+        </div>
+        <div class="word-score-preview" id="wordScore"></div>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-back" onclick="backspace()">⌫</button>
+        <button class="btn btn-clear" onclick="clearWord()">Clear</button>
+        <button class="btn btn-play" id="playBtn" onclick="playWord()">▶ PLAY WORD</button>
+      </div>
+    </div>
+
+    <!-- Message -->
+    <div class="msg-bar" id="msgBar"></div>
+
+    <!-- How to play -->
+    <div class="how-to">
+      <strong>How to play:</strong> Letters drop into your tray every few seconds.
+      Click letters to build a word, then press <strong>PLAY WORD</strong>.
+      Valid words score points — longer words score more!
+      If your tray fills up with <strong>20+ letters</strong>, it's game over.
+      Complete levels by reaching the target score before time runs out!
+    </div>
+  </div>
+
+  <div class="side-ad">AD SPACE</div>
+</div>
+
+<div class="footer">© 2024 PzedArcade · Free to Play · <a href="gramquest_level1_full.html" style="color:#a29bfe;">GramQuest</a> · <a href="38challenge.html" style="color:#f9ca24;">38 Challenge</a></div>
+
+<!-- Game Over -->
+<div class="gameover-overlay" id="gameoverOverlay">
+  <div class="gameover-card">
+    <div class="gameover-title">GAME OVER</div>
+    <div class="gameover-sub">Nice try! Your score:</div>
+    <div class="gameover-score" id="finalScore">0</div>
+    <div class="gameover-sub" id="finalWords">Words played: 0</div>
+    <div class="gameover-btns">
+      <button class="btn btn-restart" onclick="startGame()">▶ Play Again</button>
+      <button class="btn btn-grey" onclick="document.getElementById('gameoverOverlay').classList.remove('show')">✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- Start screen -->
+<div class="start-overlay" id="startOverlay">
+  <div class="start-card">
+    <div class="start-logo"><span class="l">Lex</span><span class="d">Drop</span></div>
+    <div class="start-tagline">A fast-paced word game from PzedArcade.<br>Letters fall — you score!</div>
+    <div class="start-rules">
+      <ul>
+        <li>Letters drop into your tray</li>
+        <li>Click letters to build words</li>
+        <li>3+ letter words score points</li>
+        <li>Don't let the tray overflow!</li>
+        <li>Rare letters (Q, Z, X) score big!</li>
+      </ul>
+    </div>
+    <button class="btn-start" onclick="startGame()">▶ START PLAYING</button>
+  </div>
+</div>
+
+<script>
+// ── Word list (3000+ common English words, 3-10 letters) ──
+const WORD_SET = new Set(`ace act add age ago aid aim air ale all amp and ant any ape apt arc are ark arm art ask ate awe axe
+bat bay bed bet big bin bit bog bow box boy bud bug bun bus but buy cab cam can cap car cat cob cod cog cop cot cow cry cub cud cup cur cut
+dab dad dam day den dew did dig dim din dip dog dot dry dub dud due dug dun duo ear eat eel egg ego elk elm emu end era eve ewe eye
+fab fad fan far fat fax fed fee few fib fig fin fit fix fly fob fog foe fon for fox fry fug fun fur gag gap gas gay gel gem get gig gnu
+gob god got gum gun gut guy gym had ham has hat haw hay hew hid him his hit hob hoe hog hop how hub hug hum hut ice icy ill imp ink inn ion ire irk ivy jab jag jam jar jaw jay jet jig job jot joy jug jut
+keg ken key kid kin kit lab lad lag lap law lax lay lea led leg let lid lip lit log lot low lug mad map mar mat maw may mob mop mud mug
+nag nap nip nod nor not nun nun oar odd off oft oil old opt orb ore our out owe own pad pan pap par pat paw pay pea peg pen pep pet pew pig pin pit ply pod pop pot pow pro pub pun pup pus put
+ram ran rap rat raw ray red ref rep rev rid rim rip rob rod rot row rub rug rum run rut rye sad sag sap sat saw say sea set sew shy sin sip sir sit six ski sky slab sly sob sod son sow spa spy sri
+tab tan tap tar tat tax tea ten the tie tin tip toe too top toy try tub tug two urn use van vat vex via vie vim vow wad war was wax way web wed wit woe wok won woo yak yam yap yaw yes yet yon you zap zen zip zoo
+able acid acne acre aged ages aide aids ails aims airs akin ales alms also alum amok amps amuse anal anew ante anti ants apex arch area aria arks arms army arts ashy asks atom atop aunt aura auto avid awed axes axis
+babe baby back bail bait bake ball balm band bane bang bank bare bark barn base bash bask bass bate bath bays bead beak beam bean bear beat beck beef been beer bees beet bell belt bend best bets bias bide bike bill bind bird bite bits
+blob blot blow blue blur boar boat body bold bolt bone book boom boot bore born boss both bows brag brat brew brow buck buff bulk bull bump bunk burn burp bury bush bust butt buzz cage cake calf call calm came camp cane cape card care cart case cash cast cave cede cell cent
+chad chap char chat chew chin chip chop clad clam clap clay clip clod clop clot club clue coal coat code coil coin cold cole come cook cool cord core cork corn cost coup cove cozy crab crew crop crow cube cure curl dais dale dame damp dare dark dart dash date dawn days daze dead deal dean dear debt deck deed deep deny desk dew dial dice died diet dine dire disk dive dock dome done door dose dote dove down drab drag draw dread drew drip drop drug drum dual duel dupe dusk dust duty each earl earn ease east edge emit
+face fact fade fail fair fake fame fancy fare farm fast fate fawn faze feat feed feel feet fell felt fend fern fest feud fire fish fist flag flat flaw flay flea flew flex flip flit flog flow foam foal fold folk fond font food fool foot ford fore fork form fort foul four fowl free from frog from fuel full fume fund fury fuse gale gang garb garb gate gave gaze gear gift girl give glad glee glen glow glue gnaw goes gone goof gore gown grab grad grape grasp grate gray grew grim grip grit grow grub gulf gull gust gutter hack hail hair hale half halt hare harm harp hart hash hate haul have hawk haze head heal heap hear heat heel heft held helm help herd hern hide high hill hilt hind hint hire hoax hold hole home hook hoop hope horn hose host hour hulk hull hump hung hunt husk idle idle inch inch into iron isle itch
+jade jail jeer jest jibe join joke jolt jump junk just keen keep kelp kept kick kill kind king knew knit knob know lace lack laid lain lake lame lamp land lane lard lash last late laud lawn lazy leaf lean leap lend lens levy life lift like lime limp line lint lire list live load loaf loan loft lone long loom loon loop lore lore lore lore lose loss lost lots loud lout love luck lull lump lure lure lure lure lure lure lure
+mace mail main make male mall malt mane many mark mare mask mass mast mate math mats maze mead meal mean meat meet meld melt memo mesh mild mill mime mind mine mint mire miss mist moan mode mole molt more mote moth move much mule mull must myth
+nail name nape nark nary navy near neat neck need nerd nest nick node noel none noon norm nose note noun nude null oath obey odor once only open oral orb orca our over oven owns pace pack pact page paid pail pain pair pale palm pang park part pass past pave pawn peak peal peat peck peek peel peer pelt perm pest pick pier pike pile pill pine ping pink pint pipe pith pity pixel plan play plea plow ploy plug plum plus poem poet poll pond pore port pose post pour pout pray prey price pride prime
+quiz race rack raft rage raid rail rain rake ramp rang rank rant rasp rate rave read real reap reef reel rely rend rent rest rice rich ride rift ring rink riot rise risk rite road roam robe rock rode role roll roof rope rose rote rout rule rump rung rush rust safe sage sail sake same sand sane sang sank save scam scan scar scot seal seam sear seat seed seek seep self sell send sent sewn shed shin ship shoe shot show shut sick side sift sigh silk sill sink site size skew skip slab slap slat sled slim slip slot slug smug snag snap snip snow snub soak soar sock sofa sold sole soma song soon sore sort soul soup sour span spar sped spew spill spin spit spot spur stab stag star stay stem step stew stick sill skim slim snob sack skim spun stem step stew sang
+tack tame tang tape tarn task team teal tech tell tend tent term test that them then thud tick tide tilt time toad toll tome tone tong tool torn toss toil trim trio trod true tune turk tuft turf turn tusk twin type undo upon used user vale vale vale vast veal veer veil vein verb vest vibe view vile vine vise void vole vole vote wail wake wane want ward warm warn wart wasp wave weak weal weal wear weed week well welt wend were west when whim whip whiz wide wile will wilt wind wine wing wink wisp wits woad word wore worm worn wove wren yard yarn yell your zeal zero zone zoom
+above abuse admit adult after again agent agile aging agree ahead aimed aisle alert alien align alike alive alley allow alone along aloof also altar alter amber amid ample angel anger angle angry ankle annex annoy antsy aorta apple apply aptly arise armor aroma array aside asset attic avail avoid await awake awoke axial azure
+badge bagel baker banjo bask basis batch beach beast began begin being below bench berry berth beset biome birch birth bison bitch blade blame bland blank blast blaze bleak bleed blend bless blimp blind blink bliss bloat block blood bloom blot blunt blur boast bogus boney bonus boost botch bound boxer brace braid brain brake brand brave braze bread break breed bribe bride brief brine bring brink brisk broil broke brood brook broom broth brown brute build built bulge bully bunch burly burst buyer bylaw cabin candy chalk chalk chaos charm cheek cheer chess chest chief chill chimp chomp chose chord chord chore churn civic civil clack claim clamp clank clasp claw clerk click climb cling cloak clock clone close cloth cloud clown crack craft crane cramp crane creak cream creep crest crime crimp crisp croak cross crowd crown crude crumb crush crypt cubic cubic cunning curse cycle daily dairy daisy dance dandy dazzle death debris deity delay demon dense depot depth derby detox diner dirty ditty dizzy dogma doper dopey doubt dough draft drain drama drape drawl dread dreary drift drool droop drove drown dwarf dwell early earthy eaten edible eight eject elect embed emoji empty endow endue enemy equip erode every exact exert exile extra exert exude fable faint faker false fancy farce favor feast fewer field fifth fifty fight fifth filth finch finicky first flair flare flash flask fleet flick flinch flung flunk flute foamy foggy folly force forge fort forty found frame frank fray freak freed fresh frisk fritz front frost froth frown frugal frugal fruit fully fungi
+gainly garlic gecko ghost giant girlish given giddy glory glossy glower gluten godly goose gorge gourd gouged grabs grace grade grain grail greed green greet grief grill gripe groan gross grout grove gruel grumpy guava guile guise gusto gutsy gypsy harpy harsh haunt haven heavy hertz heron hinge hippo hitch hobby holly honey honor hopeful horde house hover human humid hurry hyena hyper ideal idiot image imply inane incur indie inept infer ingot inner inset inure issue itchy jaded jewel joint joker jolly jumpy kayak karma kazoo kneel knife knoll knock knoll known kudos lapdog laser latch later lathe latte lathe leggy lemon letch libel light limit lingo liver llama lodge logic lorry lotus lousy loyal lucky lunar lurid lusty lusty maker manor march marsh match maybe mervy metal methyl meaty mogul
+nasal niche noble noisy nomad notch novel nudge nurse nymph occur octet offhand offer often olive one-up onset opera optic outdo outer ovary overt oxide ozone pacify paddy paint palsy panic papal pardon parrot perky phase phony piano piece pilot pinch pixel pizza place plaid plane plant plate plaza pleat pluck plumb plume plunge plus polar pouch pride probe proof prose proud prove prowl proxy prude puffy pulpy punch pupil purse pushy racer radar radio rally ramen rapid raven reach realm rebel rebus recur refer relax repay repel repay reply rerun reset resin rider risky river rivet roast robot rocky rodeo roman roomy roost rover rowdy royal rugby ruler rusty sabot safari salty salvo saucy scald scalp scant scone scion scope score scorn scout scowl scrub seedy seize shelf shirk shout shred shrug shun siren sixth sixty sixty sixty skald slake slave sleek sleet slept slick slide slime slimy slope slump slunk slyly small smash smear smell smile smirk smite smoke snaky snare sneak sniff snore snout sober solar sonar sorry soviet spade spank spark spawn speck speed spelt spend spicy spied spine spite spoof spook spool spore sport spout spray spree sprig spool stomp stony story stout strut stuck stung stunk stunt suave sugar suite sunny super surf sushi swamp swank swarm swear sweep sweet swift swill swing swipe swirl swoop syrup tabby taffy tapir tardy taunt tease tense tidal tiger tilted tinge tipsy titan today token tonic tower toxic trait tramp traps trash trawl tread trend trial tribe trice tripe tryst tuber tulip tummy tumor tuner turbo tweak tweed twice twist tying ultra umbra unfair unfit union unite unruly until unwed unzip upset usher usurp
+valor valor valve vapor vaunt vaunt verse vigil viral visit vista visor vodka vogue voila voila voter vouch vulture wafer wagon wager waltz weird weary weedy wheat wheel where while whirl white whole whose windy witty woman woozy world wormy worse worst worst wrath yacht yearn yesterday zappy zebra zero zingy zippy zombi`.split(/\s+/).map(w=>w.toLowerCase()).filter(w=>w.length>=3));
+
+// Letter distribution and point values (Scrabble-like)
+const LETTER_POOL = {
+  A:9,B:2,C:2,D:4,E:12,F:2,G:3,H:2,I:9,J:1,K:1,L:4,M:2,
+  N:6,O:8,P:2,Q:1,R:6,S:4,T:6,U:4,V:2,W:2,X:1,Y:2,Z:1
+};
+const LETTER_PTS = {
+  A:1,E:1,I:1,O:1,U:1,L:1,N:1,S:1,T:1,R:1,
+  D:2,G:2,
+  B:3,C:3,M:3,P:3,
+  F:4,H:4,V:4,W:4,Y:4,
+  K:5,
+  J:8,X:8,
+  Q:10,Z:10
+};
+
+// ── Game state ──
+let score = 0, level = 1, wordsPlayed = 0;
+let levelScore = 0, levelTarget = 500;
+let timerSecs = 60, timerInterval = null;
+let dropInterval = null;
+let trayLetters = []; // array of {id, letter, element}
+let selectedTiles = []; // tile ids in order
+let nextId = 0;
+let letterBag = [];
+let dropAnimId = 0;
+let dropLetterQueue = []; // letters currently falling in animation
+let gameRunning = false;
+const MAX_TRAY = 20;
+
+// ── Audio ──
+const AC = new (window.AudioContext || window.webkitAudioContext)();
+function tone(freq, type='sine', dur=0.15, vol=0.12) {
+  if (!gameRunning) return;
+  const o=AC.createOscillator(), g=AC.createGain();
+  o.type=type; o.frequency.value=freq;
+  g.gain.setValueAtTime(vol,AC.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+dur);
+  o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime+dur);
+}
+function playDrop()   { tone(300,'triangle',0.08,0.1); }
+function playSelect() { tone(523,'triangle',0.08,0.12); }
+function playDesel()  { tone(400,'triangle',0.06,0.08); }
+function playGood()   { [523,659,784].forEach((f,i)=>setTimeout(()=>tone(f,'sine',0.2,0.15),i*60)); }
+function playBad()    { tone(200,'sawtooth',0.15,0.2); }
+function playLevelUp(){ [440,554,659,880].forEach((f,i)=>setTimeout(()=>tone(f,'sine',0.3,0.18),i*80)); }
+
+// ── Build letter bag ──
+function buildBag() {
+  letterBag = [];
+  for (const [letter, count] of Object.entries(LETTER_POOL)) {
+    for (let i=0;i<count;i++) letterBag.push(letter);
+  }
+  shuffle(letterBag);
+}
+function drawLetter() {
+  if (letterBag.length === 0) buildBag();
+  return letterBag.pop();
+}
+function shuffle(arr) {
+  for (let i=arr.length-1;i>0;i--) {
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+}
+
+// ── Start / Restart ──
+function startGame() {
+  if (AC.state==='suspended') AC.resume();
+  document.getElementById('startOverlay').style.display='none';
+  document.getElementById('gameoverOverlay').classList.remove('show');
+
+  score=0; level=1; wordsPlayed=0; levelScore=0; levelTarget=500;
+  timerSecs=60; trayLetters=[]; selectedTiles=[]; nextId=0; dropLetterQueue=[];
+  gameRunning=true;
+
+  buildBag();
+  clearInterval(timerInterval);
+  clearInterval(dropInterval);
+
+  updateStats();
+  renderTray();
+  clearWordBuilder();
+  setMsg('');
+
+  // Give some starting letters
+  for (let i=0;i<6;i++) addLetterToTray(drawLetter());
+
+  startTimerCountdown();
+  startDropping();
+  document.getElementById('dropLabel').style.display='none';
+}
+
+function startTimerCountdown() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timerSecs--;
+    document.getElementById('timerVal').textContent = timerSecs;
+    if (timerSecs <= 0) {
+      clearInterval(timerInterval);
+      checkLevelEnd();
+    }
+  }, 1000);
+}
+
+function checkLevelEnd() {
+  if (levelScore >= levelTarget) {
+    // Level up!
+    level++;
+    levelTarget = Math.floor(levelTarget * 1.6);
+    levelScore = 0;
+    timerSecs = 60;
+    setMsg(`⭐ LEVEL ${level}! Keep going!`, '#f9ca24');
+    playLevelUp();
+    launchConfetti(20);
+    updateStats();
+    startTimerCountdown();
+  } else {
+    // Game over
+    clearInterval(dropInterval);
+    gameRunning = false;
+    document.getElementById('finalScore').textContent = score;
+    document.getElementById('finalWords').textContent = `Words played: ${wordsPlayed}`;
+    setTimeout(() => document.getElementById('gameoverOverlay').classList.add('show'), 600);
+  }
+}
+
+// ── Drop interval ──
+function startDropping() {
+  clearInterval(dropInterval);
+  const dropRate = Math.max(800, 3000 - (level-1)*200);
+  dropInterval = setInterval(() => {
+    if (!gameRunning) return;
+    if (trayLetters.length >= MAX_TRAY) {
+      gameOverFlow();
+      return;
+    }
+    const letter = drawLetter();
+    animateFallingLetter(letter);
+  }, dropRate);
+}
+
+function gameOverFlow() {
+  clearInterval(dropInterval);
+  clearInterval(timerInterval);
+  gameRunning = false;
+  setMsg('Tray overflow! Game Over!', '#e17055');
+  setTimeout(() => {
+    document.getElementById('finalScore').textContent = score;
+    document.getElementById('finalWords').textContent = `Words played: ${wordsPlayed}`;
+    document.getElementById('gameoverOverlay').classList.add('show');
+  }, 1000);
+}
+
+// ── Falling letter animation ──
+function animateFallingLetter(letter) {
+  const zone = document.getElementById('dropZone');
+  const zoneW = zone.offsetWidth, zoneH = zone.offsetHeight;
+
+  const el = document.createElement('div');
+  el.className = 'falling-letter pt'+LETTER_PTS[letter];
+  el.textContent = letter;
+  const ptEl = document.createElement('span');
+  ptEl.className='pt'; ptEl.textContent = LETTER_PTS[letter];
+  el.appendChild(ptEl);
+
+  const x = Math.random()*(zoneW-56);
+  el.style.left = x+'px';
+  el.style.top = '-60px';
+  zone.appendChild(el);
+
+  let top = -60;
+  const speed = 2 + level * 0.5;
+
+  function fall() {
+    top += speed;
+    el.style.top = top+'px';
+    if (top >= zoneH - 60) {
+      el.remove();
+      addLetterToTray(letter);
+      playDrop();
+      if (trayLetters.length >= MAX_TRAY) gameOverFlow();
+    } else {
+      requestAnimationFrame(fall);
+    }
+  }
+  requestAnimationFrame(fall);
+}
+
+// ── Tray management ──
+function addLetterToTray(letter) {
+  const id = nextId++;
+  const obj = {id, letter};
+  trayLetters.push(obj);
+  renderTray();
+  updateStats();
+  updateOverflow();
+}
+
+function renderTray() {
+  const tray = document.getElementById('tray');
+  tray.innerHTML = '';
+  trayLetters.forEach(({id, letter}) => {
+    const div = document.createElement('div');
+    div.className = 'letter-tile pt' + LETTER_PTS[letter];
+    div.id = 'tile-'+id;
+    div.innerHTML = letter + `<span class="tile-pt">${LETTER_PTS[letter]}</span>`;
+    const isSel = selectedTiles.includes(id);
+    if (isSel) div.className += ' sel';
+    div.addEventListener('click', () => onTileClick(id, letter));
+    tray.appendChild(div);
+  });
+}
+
+function updateOverflow() {
+  const el = document.getElementById('trayOverflow');
+  const count = trayLetters.length;
+  if (count >= 16) {
+    el.textContent = `⚠️ ${count}/${MAX_TRAY} — tray almost full!`;
+  } else {
+    el.textContent = `${count} letters`;
+  }
+}
+
+// ── Tile selection ──
+function onTileClick(id, letter) {
+  if (AC.state==='suspended') AC.resume();
+  if (!gameRunning) return;
+  const idx = selectedTiles.indexOf(id);
+  if (idx >= 0) {
+    // Deselect this tile
+    selectedTiles.splice(idx, 1);
+    playDesel();
+  } else {
+    selectedTiles.push(id);
+    playSelect();
+  }
+  renderTray();
+  updateWordDisplay();
+}
+
+function clearWord() {
+  selectedTiles = [];
+  renderTray();
+  updateWordDisplay();
+}
+
+function backspace() {
+  if (selectedTiles.length > 0) {
+    selectedTiles.pop();
+    renderTray();
+    updateWordDisplay();
+    playDesel();
+  }
+}
+
+// ── Word display ──
+function updateWordDisplay() {
+  const display = document.getElementById('wordDisplay');
+  const scoreEl = document.getElementById('wordScore');
+  display.innerHTML = '';
+  display.className = 'word-display';
+
+  if (selectedTiles.length === 0) {
+    display.innerHTML = '<span class="word-placeholder">Select letters to form a word...</span>';
+    scoreEl.textContent = '';
+    return;
+  }
+
+  const letters = selectedTiles.map(id => trayLetters.find(t=>t.id===id)?.letter).filter(Boolean);
+  const word = letters.join('').toLowerCase();
+
+  letters.forEach(l => {
+    const span = document.createElement('span');
+    span.className = 'word-char';
+    span.textContent = l;
+    display.appendChild(span);
+  });
+
+  const pts = calcWordScore(letters);
+  if (word.length >= 3 && WORD_SET.has(word)) {
+    display.className = 'word-display valid-word';
+    scoreEl.textContent = '+'+pts;
+    scoreEl.style.color = '#55efc4';
+  } else if (word.length >= 3) {
+    display.className = 'word-display invalid-word';
+    scoreEl.textContent = '';
+  } else {
+    scoreEl.textContent = '';
+  }
+}
+
+function calcWordScore(letters) {
+  const baseScore = letters.reduce((s, l) => s + LETTER_PTS[l], 0);
+  const lengthBonus = [0,0,0,1,2,3,5,8,12,18][Math.min(letters.length,8)] || 18;
+  return baseScore + lengthBonus;
+}
+
+// ── Play word ──
+function playWord() {
+  if (AC.state==='suspended') AC.resume();
+  if (!gameRunning) return;
+
+  const letters = selectedTiles.map(id => trayLetters.find(t=>t.id===id)?.letter).filter(Boolean);
+  const word = letters.join('').toLowerCase();
+
+  if (letters.length < 3) { setMsg('Need at least 3 letters!', '#e17055'); playBad(); return; }
+
+  if (!WORD_SET.has(word)) {
+    setMsg(`"${word.toUpperCase()}" is not a valid word!`, '#e17055');
+    playBad();
+    // Flash invalid
+    document.getElementById('wordDisplay').style.background = 'rgba(225,112,85,0.2)';
+    setTimeout(() => document.getElementById('wordDisplay').style.background='', 500);
+    return;
+  }
+
+  // Valid word!
+  const pts = calcWordScore(letters);
+  score += pts;
+  levelScore += pts;
+  wordsPlayed++;
+
+  // Animate correct tiles
+  selectedTiles.forEach(id => {
+    const el = document.getElementById('tile-'+id);
+    if (el) el.classList.add('correct-anim');
+  });
+
+  // Remove used tiles after brief animation
+  setTimeout(() => {
+    trayLetters = trayLetters.filter(t => !selectedTiles.includes(t.id));
+    selectedTiles = [];
+    renderTray();
+    updateWordDisplay();
+    updateStats();
+    updateLevelBar();
+    updateOverflow();
+  }, 350);
+
+  playGood();
+  setMsg(`+${pts} pts — "${word.toUpperCase()}" 🎉`, '#55efc4');
+
+  // Bonus confetti for long words
+  if (letters.length >= 6) launchConfetti(10);
+
+  // Check if level target met
+  if (levelScore >= levelTarget) {
+    clearInterval(timerInterval);
+    setTimeout(checkLevelEnd, 500);
+  }
+}
+
+// ── Stats ──
+function updateStats() {
+  document.getElementById('scoreVal').textContent = score;
+  document.getElementById('levelVal').textContent = level;
+  document.getElementById('wordsVal').textContent = wordsPlayed;
+  document.getElementById('levelInfo').textContent = level;
+  document.getElementById('levelPts').textContent = levelScore;
+  document.getElementById('levelTarget').textContent = levelTarget;
+  updateLevelBar();
+}
+
+function updateLevelBar() {
+  const pct = Math.min(100, (levelScore/levelTarget)*100);
+  document.getElementById('levelBar').style.width = pct+'%';
+}
+
+// ── Message ──
+let msgTimeout;
+function setMsg(text, color='#f9ca24') {
+  const el = document.getElementById('msgBar');
+  el.textContent = text;
+  el.style.color = color;
+  clearTimeout(msgTimeout);
+  if (text) msgTimeout = setTimeout(() => el.textContent='', 3000);
+}
+
+// ── Confetti ──
+function launchConfetti(count=30) {
+  const colors = ['#f9ca24','#a29bfe','#55efc4','#e17055','#6c5ce7'];
+  for (let i=0;i<count;i++) {
+    setTimeout(() => {
+      const c=document.createElement('div');
+      c.className='confetti-piece';
+      c.style.cssText=`left:${Math.random()*100}vw;top:-20px;background:${colors[Math.floor(Math.random()*colors.length)]};width:${6+Math.random()*10}px;height:${6+Math.random()*10}px;animation-duration:${2+Math.random()*2}s`;
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(),4000);
+    },i*40);
+  }
+}
+</script>
+</body>
+</html>
