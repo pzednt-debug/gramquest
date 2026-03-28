@@ -457,7 +457,8 @@ function startGame() {
 
   updateStats();
   renderTray();
-  clearWordBuilder();
+  selectedTiles = [];
+  updateWordDisplay();
   setMsg('');
 
   // Give some starting letters
