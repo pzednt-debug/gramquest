@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8363731972559177" crossorigin="anonymous"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Alphabet Drop – PzedArcade</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{
+      font-family:'Segoe UI',sans-serif;
+      background:linear-gradient(180deg,#a8edff 0%,#5bc8f5 40%,#2196f3 100%);
+      min-height:100vh;overflow:hidden;
+      display:flex;align-items:center;justify-content:center;
+    }
+    /* ── STARS ── */
+    #stars-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;}
+    .cloud{position:absolute;background:#fff;border-radius:50px;opacity:.7;animation:cloudMove linear infinite;}
+    .cloud::before,.cloud::after{content:'';position:absolute;background:#fff;border-radius:50%;}
+    .cloud::before{width:60%;height:180%;top:-40%;left:15%;}
+    .cloud::after{width:40%;height:140%;top:-20%;right:10%;}
+    @keyframes cloudMove{from{transform:translateX(-200px)}to{transform:translateX(calc(100vw + 200px))}}
+
+    /* ── SCREENS ── */
+    .screen{display:none;flex-direction:column;align-items:center;justify-content:center;
+      width:100%;min-height:100vh;padding:20px;position:relative;z-index:10;}
+    .screen.active{display:flex;}
+
+    /* ── WELCOME ── */
+    #screen-welcome h1{
+      font-size:clamp(2.2rem,7vw,4rem);font-weight:900;
+      color:#fff;text-shadow:0 4px 20px rgba(0,0,0,.3);
+      letter-spacing:2px;margin-bottom:8px;text-align:center;
+    }
+    #screen-welcome p.sub{color:#e0f7ff;font-size:1.1rem;margin-bottom:32px;text-align:center;}
+    .plane-demo{font-size:3rem;animation:planeFly 3s linear infinite;}
+    @keyframes planeFly{0%{transform:translateX(-60px)}100%{transform:translateX(60px)}}
+    .diff-btns{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:16px;}
+    .diff-btn{
+      padding:16px 36px;border-radius:50px;border:none;cursor:pointer;
+      font-size:1.1rem;font-weight:700;letter-spacing:1px;
+      transition:transform .15s,box-shadow .15s;box-shadow:0 6px 20px rgba(0,0,0,.2);
+    }
+    .diff-btn:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.3);}
+    .diff-btn.easy{background:linear-gradient(135deg,#00b894,#55efc4);color:#fff;}
+    .diff-btn.medium{background:linear-gradient(135deg,#e17055,#fdcb6e);color:#fff;}
+    .diff-btn.hard{background:linear-gradient(135deg,#d63031,#fd79a8);color:#fff;}
+    .how-to{
+      background:rgba(255,255,255,.15);border-radius:16px;padding:16px 24px;
+      color:#fff;font-size:.95rem;line-height:1.8;margin-top:24px;max-width:400px;text-align:center;
+    }
+
+    /* ── GAME SCREEN ── */
+    #screen-game{justify-content:flex-start;padding:0;}
+    .scorebar{
+      display:flex;align-items:center;gap:12px;padding:10px 16px;
+      background:rgba(0,0,0,.25);width:100%;flex-wrap:wrap;justify-content:center;
+    }
+    .sc-box{
+      background:rgba(255,255,255,.2);border-radius:10px;padding:6px 14px;
+      color:#fff;font-weight:700;font-size:.95rem;text-align:center;min-width:70px;
+    }
+    .sc-box span{display:block;font-size:.7rem;opacity:.8;font-weight:400;}
+    #timer-bar-wrap{flex:1;min-width:120px;max-width:200px;height:8px;background:rgba(255,255,255,.2);border-radius:4px;overflow:hidden;}
+    #timer-bar{height:100%;background:linear-gradient(90deg,#55efc4,#fdcb6e,#fd79a8);border-radius:4px;transition:width .05s;}
+
+    /* sky / planes area */
+    #sky{position:relative;width:100%;height:220px;overflow:hidden;}
+    .plane-row{position:absolute;left:0;width:100%;display:flex;align-items:center;}
+    .plane-obj{
+      position:absolute;top:50%;transform:translateY(-50%);
+      display:flex;align-items:center;gap:0;white-space:nowrap;
+      animation:flyAcross linear forwards;
+    }
+    .plane-obj.left-to-right{left:-120px;}
+    .plane-obj.right-to-left{right:-120px;flex-direction:row-reverse;}
+    @keyframes flyAcross{0%{left:-140px}100%{left:calc(100% + 140px)}}
+    @keyframes flyAcrossRTL{0%{right:-140px}100%{right:calc(100% + 140px)}}
+    .plane-emoji{font-size:2.2rem;filter:drop-shadow(0 4px 8px rgba(0,0,0,.2));}
+    .plane-letter{
+      background:linear-gradient(135deg,#2d3436,#636e72);
+      color:#fff;font-size:1.3rem;font-weight:900;
+      width:36px;height:36px;border-radius:8px;
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 4px 12px rgba(0,0,0,.3);
+      border:2px solid rgba(255,255,255,.3);
+      margin: 0 4px;
+    }
+    .dropping-letter{
+      position:absolute;font-size:1.3rem;font-weight:900;
+      background:linear-gradient(135deg,#2d3436,#636e72);color:#fff;
+      width:40px;height:40px;border-radius:8px;
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 4px 12px rgba(0,0,0,.3);
+      border:2px solid rgba(255,255,255,.3);
+      animation:dropDown .6s cubic-bezier(.25,1.5,.5,1) forwards;
+      z-index:20;
+    }
+    @keyframes dropDown{0%{transform:translateY(0);opacity:1}100%{transform:translateY(200px);opacity:0}}
+
+    /* letter tray */
+    #tray-section{
+      width:100%;padding:10px 12px;background:rgba(0,0,0,.15);
+      border-top:1px solid rgba(255,255,255,.1);
+    }
+    #tray-label{color:#e0f7ff;font-size:.8rem;margin-bottom:6px;font-weight:600;letter-spacing:1px;}
+    #letter-tray{
+      display:flex;flex-wrap:wrap;gap:8px;min-height:52px;
+      align-items:center;justify-content:center;
+    }
+    .tray-tile{
+      background:linear-gradient(135deg,#2d3436,#636e72);
+      color:#fff;font-size:1.2rem;font-weight:900;
+      width:44px;height:44px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 4px 12px rgba(0,0,0,.3);
+      border:2px solid rgba(255,255,255,.3);
+      cursor:pointer;transition:transform .1s,box-shadow .1s;
+      user-select:none;
+    }
+    .tray-tile:hover{transform:translateY(-4px);box-shadow:0 8px 20px rgba(0,0,0,.4);}
+    .tray-tile.selected{
+      background:linear-gradient(135deg,#0984e3,#74b9ff);
+      border-color:#fff;transform:translateY(-4px);
+    }
+
+    /* word builder */
+    #word-section{
+      width:100%;padding:10px 12px;background:rgba(0,0,0,.2);
+    }
+    #word-label{color:#e0f7ff;font-size:.8rem;margin-bottom:6px;font-weight:600;letter-spacing:1px;}
+    #word-display{
+      display:flex;flex-wrap:wrap;gap:8px;min-height:52px;
+      align-items:center;justify-content:center;
+      background:rgba(255,255,255,.08);border-radius:12px;padding:8px;
+    }
+    .word-tile{
+      background:linear-gradient(135deg,#0984e3,#74b9ff);
+      color:#fff;font-size:1.2rem;font-weight:900;
+      width:44px;height:44px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 4px 12px rgba(0,0,0,.3);
+      border:2px solid rgba(255,255,255,.5);
+      cursor:pointer;transition:transform .1s;
+      user-select:none;
+    }
+    .word-tile:hover{transform:translateY(-2px);}
+    #word-hint{color:rgba(255,255,255,.5);font-size:.9rem;align-self:center;}
+
+    /* action buttons */
+    #action-btns{
+      display:flex;gap:10px;padding:12px;
+      width:100%;justify-content:center;flex-wrap:wrap;
+    }
+    .act-btn{
+      padding:12px 24px;border-radius:50px;border:none;cursor:pointer;
+      font-size:1rem;font-weight:700;letter-spacing:.5px;
+      transition:transform .12s,box-shadow .12s;
+      box-shadow:0 4px 16px rgba(0,0,0,.2);
+    }
+    .act-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3);}
+    .act-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+    #btn-submit{background:linear-gradient(135deg,#00b894,#55efc4);color:#fff;}
+    #btn-clear{background:rgba(255,255,255,.25);color:#fff;}
+    #btn-pass{background:linear-gradient(135deg,#d63031,#fd79a8);color:#fff;}
+
+    /* feedback */
+    #feedback{
+      text-align:center;color:#fff;font-size:1rem;font-weight:700;
+      min-height:28px;padding:4px 0;
+    }
+    #feedback.correct{color:#55efc4;}
+    #feedback.wrong{color:#fd79a8;}
+
+    /* ── END SCREEN ── */
+    #screen-end{gap:16px;}
+    .end-card{
+      background:rgba(255,255,255,.15);backdrop-filter:blur(10px);
+      border-radius:24px;padding:28px 36px;text-align:center;
+      color:#fff;width:min(400px,90vw);box-shadow:0 8px 32px rgba(0,0,0,.2);
+    }
+    .end-card h2{font-size:1.8rem;margin-bottom:4px;}
+    .end-grade{font-size:1.3rem;margin:12px 0;color:#fdcb6e;}
+    .end-score{font-size:3rem;font-weight:900;color:#55efc4;line-height:1;}
+    .end-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
+    .end-stat{background:rgba(0,0,0,.15);border-radius:12px;padding:10px;}
+    .end-stat-val{font-size:1.4rem;font-weight:900;}
+    .end-stat-lbl{font-size:.75rem;opacity:.8;}
+    .end-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:16px;}
+    .end-btn{
+      padding:12px 28px;border-radius:50px;border:none;cursor:pointer;
+      font-size:1rem;font-weight:700;color:#fff;
+      transition:transform .12s;box-shadow:0 4px 16px rgba(0,0,0,.2);
+    }
+    .end-btn:hover{transform:translateY(-2px);}
+    .end-btn.again{background:linear-gradient(135deg,#0984e3,#74b9ff);}
+    .end-btn.menu{background:rgba(255,255,255,.25);}
+
+    /* confetti */
+    .confetti-piece{
+      position:fixed;top:-20px;border-radius:3px;
+      animation:confettiFall var(--dur,2s) linear forwards;
+      pointer-events:none;z-index:999;
+    }
+    @keyframes confettiFall{
+      0%{transform:translateY(0) rotate(0)}
+      100%{transform:translateY(110vh) rotate(var(--rot,360deg));opacity:0}
+    }
+
+    /* music pref */
+    #music-pref{
+      position:fixed;bottom:12px;right:12px;z-index:100;
+      background:rgba(0,0,0,.3);border:none;border-radius:20px;
+      color:#fff;padding:6px 14px;font-size:.8rem;cursor:pointer;
+    }
+  </style>
+</head>
+<body>
+<div id="stars-bg"></div>
+<button id="music-pref" onclick="toggleMusicPref()">🎵 <span id="music-pref-label">ON</span></button>
+
+<!-- WELCOME -->
+<div id="screen-welcome" class="screen active">
+  <div class="plane-demo">✈️</div>
+  <h1>ALPHABET DROP</h1>
+  <p class="sub">Catch the letters. Spell the words. Beat the clock!</p>
+  <div class="how-to">
+    ✈️ Planes fly by and drop letters<br>
+    🔤 Tap letters to build a word<br>
+    ✅ Submit to score — longer words = more points!
+  </div>
+  <div class="diff-btns">
+    <button class="diff-btn easy"    onclick="startGame('easy')">EASY</button>
+    <button class="diff-btn medium"  onclick="startGame('medium')">MEDIUM</button>
+    <button class="diff-btn hard"    onclick="startGame('hard')">HARD</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen">
+  <div class="scorebar">
+    <div class="sc-box"><span>SCORE</span><span id="sc-score">0</span></div>
+    <div id="timer-bar-wrap"><div id="timer-bar" style="width:100%"></div></div>
+    <div class="sc-box"><span>WORDS</span><span id="sc-words">0</span></div>
+    <div class="sc-box"><span id="diff-label">EASY</span><span id="sc-time">120s</span></div>
+  </div>
+  <div id="sky"></div>
+  <div id="feedback"></div>
+  <div id="tray-section">
+    <div id="tray-label">AVAILABLE LETTERS</div>
+    <div id="letter-tray"></div>
+  </div>
+  <div id="word-section">
+    <div id="word-label">YOUR WORD</div>
+    <div id="word-display"><span id="word-hint">Tap letters above to build a word</span></div>
+  </div>
+  <div id="action-btns">
+    <button class="act-btn" id="btn-submit" onclick="submitWord()" disabled>SUBMIT WORD</button>
+    <button class="act-btn" id="btn-clear"  onclick="clearWord()">CLEAR</button>
+    <button class="act-btn" id="btn-pass"   onclick="passLetters()">PASS (-5)</button>
+  </div>
+</div>
+
+<!-- END -->
+<div id="screen-end" class="screen">
+  <div class="end-card">
+    <h2>GAME OVER</h2>
+    <div class="end-grade" id="end-grade">Great job!</div>
+    <div class="end-score" id="end-score">0</div>
+    <div style="color:rgba(255,255,255,.7);font-size:.9rem;margin-top:4px;">points</div>
+    <div class="end-stats">
+      <div class="end-stat"><div class="end-stat-val" id="end-words">0</div><div class="end-stat-lbl">Words Found</div></div>
+      <div class="end-stat"><div class="end-stat-val" id="end-best">—</div><div class="end-stat-lbl">Best Word</div></div>
+      <div class="end-stat"><div class="end-stat-val" id="end-long">0</div><div class="end-stat-lbl">Longest Word</div></div>
+      <div class="end-stat"><div class="end-stat-val" id="end-passed">0</div><div class="end-stat-lbl">Passes Used</div></div>
+    </div>
+    <div class="end-btns">
+      <button class="end-btn again" onclick="startGame(lastDiff)">PLAY AGAIN</button>
+      <button class="end-btn menu"  onclick="showScreen('screen-welcome')">MENU</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// WORD LIST
+// ═══════════════════════════════════════════════════════
+const VALID_WORDS = new Set([
+  'ace','act','add','age','ago','aid','aim','air','ale','all','ant','ape','apt','arc','are','ark','arm','art','ash','ask','ate','awe','axe',
+  'bad','bag','ban','bar','bat','bay','bed','bet','bid','big','bit','bow','box','boy','bud','bug','bun','bus','but','buy','bye',
+  'cab','can','cap','car','cat','cob','cod','cog','cop','cot','cow','cry','cub','cup','cut',
+  'dad','dam','dew','did','dig','dim','dip','dog','dot','dry','dub','dug','dun','duo','dye',
+  'ear','eat','eel','egg','ego','elf','elk','elm','emu','end','era','eve',
+  'fad','fan','far','fat','fax','fed','few','fig','fin','fit','fix','fly','foe','fog','for','fox','fry','fun','fur',
+  'gag','gap','gas','gel','gem','get','gig','gin','gnu','god','got','gum','gun','gut','guy','gym',
+  'had','ham','has','hat','hay','hem','hen','her','hew','hid','him','hip','his','hit','hog','hop','hot','how','hub','hug','hum','hut',
+  'ice','icy','ill','imp','ink','inn','ion','ire','ivy',
+  'jab','jag','jam','jar','jaw','jet','jig','job','jog','joy','jug','jut',
+  'keg','key','kid','kin','kit',
+  'lab','lag','lap','law','lax','lay','lea','led','leg','let','lid','lip','lit','log','lot','low',
+  'mad','man','map','mar','mat','maw','max','men','met','mob','mop','mud','mug','mum','nab','nag','nap','net','new','nip','nod','nor','not','now','nun','nut',
+  'oak','oar','oat','odd','ode','off','oil','old','one','opt','orb','ore','our','out','owe','own',
+  'pad','pal','pan','pap','par','pat','paw','pay','pea','peg','pen','pep','per','pet','pie','pig','pin','pit','ply','pod','pop','pot','pry','pub','pug','pun','pup','pus','put',
+  'rag','ram','ran','rap','rat','raw','ray','red','ref','rep','rev','rib','rid','rig','rim','rip','rob','rod','rot','row','rub','rug','rum','run','rut','rye',
+  'sad','sag','sap','sat','saw','say','set','sew','shy','sin','sip','sir','sis','sit','six','ski','sky','sly','sob','sod','son','sow','soy','spa','spy','sty','sub','sue','sum','sun','sup',
+  'tab','tan','tap','tar','tat','tax','tea','ten','the','tie','tin','tip','toe','ton','too','top','toy','try','tub','tug','two',
+  'urn','use',
+  'van','vat','vet','vex','via','vie','vim','vow',
+  'wad','war','was','wax','way','web','wed','wet','who','why','wig','win','wit','woe','wok','won','woo','wow',
+  'yam','yap','yaw','yea','yet','yew','you','yow',
+  'zap','zed','zen','zip','zoo',
+  // 4-letter words
+  'able','ache','acid','acre','aged','aide','aims','airy','also','alto','alum','amid','amps','ankh','ante','arch','area','army','atom','atop','aunt','auto','avid','awed','awry',
+  'babe','back','bake','bald','bale','ball','balm','band','bane','bang','bank','bare','bark','barn','base','bash','bask','bath','beak','beam','bean','bear','beat','beck','beef','been','beer','bell','belt','bend','best','bike','bile','bill','bind','bird','bite','blot','blow','blue','blur','boar','boat','body','bold','bolt','bomb','bond','bone','book','boom','boot','bore','born','boss','both','bout','bowl','brag','bran','bray','bred','brew','brim','brow','buck','buff','bulk','bull','bump','bunk','burp','buzz',
+  'cafe','cage','cake','call','calm','came','camp','cane','care','carp','cart','case','cash','cast','cave','cell','chat','chef','chew','chip','chop','chub','cite','city','clam','clap','claw','clay','clip','clod','clog','clop','clot','club','clue','coal','coat','coil','coin','cold','cole','colt','come','cone','cook','cool','cope','copy','cord','core','cork','corn','cost','cozy','crab','cram','crew','crop','crow','cube','cure','curl','cute','czar',
+  'dale','dame','dare','dark','dart','dasa','data','date','dawn','days','dead','deaf','deal','dean','dear','debt','deck','deed','deep','deft','deli','dent','desk','dial','dice','diet','dike','dime','dine','ding','dire','dirt','disc','dish','disk','dive','dock','dole','dome','done','doom','door','dope','dorm','dose','dote','dove','down','drab','drag','draw','drew','drip','drop','drug','drum','dual','duel','duke','dull','dumb','dump','dune','dupe','dusk','dust',
+  'each','earl','earn','ease','east','edge','edit','else','emit','envy','epic','even','ever','evil','exam','exit',
+  'face','fact','fade','fail','fair','fake','fall','fame','fang','farm','fate','fawn','faze','fear','feat','feel','feet','fell','felt','fern','file','fill','film','find','fine','fire','firm','fish','fist','flag','flat','flaw','flea','fled','flew','fley','flip','flit','flow','foam','fold','folk','fond','font','fool','foot','ford','fore','fork','form','fort','foul','four','fowl','free','frog','from','fuel','full','fume',
+  'gait','gale','gall','game','gape','gash','gave','gawk','gaze','gear','germ','gift','girl','give','glad','glee','glen','glob','glue','glum','gnat','goal','golf','gone','gong','good','goof','gown','grab','grad','gram','gray','grew','grey','grid','grin','grip','grit','grow','grub','gulf','gull','gush','gust',
+  'hack','hail','hair','half','hall','halt','hand','hang','hard','hare','harm','harp','hash','hate','haul','have','hawk','haze','hazy','head','heal','heap','heat','heel','held','helm','help','herb','herd','hero','hike','hill','hint','hire','hiss','hoax','hold','hole','home','hone','honk','hook','hope','horn','hose','host','hour','hove','hull','hunt','hurl','hymn',
+  'idea','idle','inch','iron',
+  'jade','jail','jake','jest','join','joke','jolt','junk','just',
+  'keen','keep','kern','kill','kind','king','kiss','knob','knot','know',
+  'lack','laid','lame','lamp','land','lane','lard','lark','last','late','laud','lava','lawn','lazy','lead','leaf','lean','leap','left','lend','lens','lest','levy','liar','lick','life','lift','like','lime','line','link','lion','list','live','load','loaf','loan','lock','loft','lone','long','look','loom','loon','loop','lore','lorn','lose','loss','lost','loud','lout','love','luck','lull','lump','lung','lure','lurk','lust','lute',
+  'mace','made','maid','mail','main','make','male','mall','malt','mane','many','mare','mark','mars','mask','mass','mast','mate','math','maze','mead','meal','mean','meat','meet','meld','melt','memo','menu','mere','mesh','mile','milk','mill','mine','mint','miss','mist','moan','moat','mock','mole','molt','monk','mood','moon','moor','more','most','move','muck','mutt','myth',
+  'nail','name','nape','nark','nave','navy','near','neat','neck','need','nest','news','next','nice','nick','nine','node','none','noon','norm','nose','note','noun','nude','null',
+  'oath','oboe','odds','okay','once','only','open','oven','over',
+  'pace','pack','page','paid','pail','pain','pair','pale','palm','pang','park','part','pass','past','path','peak','peal','peat','peel','peer','perk','pest','pick','pile','pine','pink','pipe','plan','play','plot','plow','ploy','plum','plus','poem','poet','pole','poll','pond','pool','poor','pork','port','pose','pour','pray','prey','prod','prop','prow','pull','pulp','pump','pure','push',
+  'quad','quit','quiz',
+  'race','rack','raid','rail','rain','rake','ramp','rang','rank','rant','rash','rate','rave','real','reap','reel','rein','rely','rent','rest','rice','rica','ride','rife','ring','riot','rise','risk','roam','roar','robe','rock','rode','role','roll','roof','rook','room','root','rope','rose','rout','rove','ruby','rude','ruin','rule','ruse','rusa','rust',
+  'safe','sage','sail','sake','sale','salt','same','sand','sane','sang','sank','save','scan','scar','seal','seam','seat','seed','seek','seem','seen','seep','self','sell','send','shed','shin','ship','shoe','shop','shot','show','shut','sick','side','sigh','silk','sill','silo','sing','sink','site','size','skew','skip','slab','slag','slap','slid','slim','slip','slit','slop','slow','slum','smug','snap','snob','snub','soak','soap','sock','sofa','soil','sold','sole','some','song','soot','sore','sort','soul','soup','sour','span','spar','spin','spit','spot','spur','star','stay','stem','step','stew','stir','stop','stub','stun','such','suit','sulk','sung','sunk','sure','surf','swam','swan','swap','swat','sway','swim','swum',
+  'tale','talk','tall','tame','tang','tape','task','tell','tend','tent','term','than','that','them','then','they','thin','this','thou','thus','tide','tied','tier','till','tilt','time','tiny','tire','toad','toll','tomb','tome','tone','tong','took','tool','toot','torn','toss','tour','town','trap','tray','tree','trek','trim','trio','trip','trod','trot','true','tuck','tuft','tune','turf','turn','tusk','twin','twit',
+  'ugly','undo','unit','upon','urge',
+  'vale','vane','veil','vein','vent','very','vest','view','vine','vise','void','volt',
+  'wade','wage','wail','wait','wake','walk','wall','wane','want','ward','warm','warn','warp','wart','wary','wash','wasp','wave','weak','wean','weed','week','weld','well','wend','went','west','what','when','whim','whip','whiz','wide','wield','wife','wild','will','wilt','wine','wink','wire','wise','wish','wisp','with','wolf','womb','wood','wool','word','wore','work','worm','worn','wove','wrap','wren','writ',
+  'yard','yarn','year','yell','your','yuck',
+  'zeal','zero','zest','zone',
+  // 5-letter words
+  'abide','about','above','abuse','acids','acted','actor','acute','admit','adopt','adult','after','again','agent','agile','agony','agree','ahead','aimed','alarm','album','alert','alike','align','alive','aloft','alone','along','aloud','altar','alter','ample','angel','anger','angle','angry','anime','ankle','annex','antic','apart','apple','apply','arose','array','ashes','asset','atlas','attic','audio','augur','avail','avast','avid','avoid','awake','award','aware','awful','awoke',
+  'badge','baker','banal','banjo','basic','basis','batch','beach','beard','beast','began','begin','being','below','bench','bible','birch','bison','black','blade','blame','bland','blank','blast','blaze','bleak','bleed','blend','bless','blind','block','blood','bloom','blown','board','brace','braid','brain','brake','brand','brave','bread','break','breed','bride','brief','bring','broke','brook','broom','broth','brown','brush','build','built','bunch','bunny','burnt','burst','buyer',
+  'cabin','camel','canal','candy','canon','carry','catca','cause','cedar','chain','chair','chalk','caaos','charm','chart','chase','check','cheek','cheer','chess','chest','child','china','choir','choke','chord','civil','claim','clash','clasp','class','clean','clear','clerk','click','cliff','cling','close','cloth','cloud','clown','coach','cobra','cocoa','comet','comic','comma','coral','count','cover','covet','crack','craft','crane','creak','crime','crisp','cross','crowd','crown','cruel','crush','curve','cycle',
+  'daisy','daily','dance','decay','delta','dense','depot','depot','derby','devil','digit','dirty','disco','ditch','ditty','dodge','doing','donor','doubt','dough','dowry','dozen','draft','drain','drake','dream','dress','drift','drill','drink','drive','drove','drown','dwarf','dwell',
+  'eagle','early','earth','eight','elite','empty','enemy','enjoy','enter','entry','equal','error','essay','evoke','exact','extra',
+  'fable','facet','faded','faint','fairy','faith','false','fancy','fatal','fault','feast','fetca','fever','fiber','field','fifth','fifty','fight','final','first','fixed','flame','flank','flash','fleet','flesh','flick','fling','float','flock','flood','floor','flora','flour','flown','fluid','flute','focus','folio','force','forge','forum','found','frame','frank','fraud','fresh','front','frost','froze','fruit','fully','funny','furry',
+  'gauze','gavel','given','giant','girlish','given','glade','gland','glare','glass','glaze','gleam','glide','glimpse','glint','gloat','globe','glory','gloss','glove','glyph','gnome','grace','grade','grail','grain','grand','grant','grape','grasp','grass','grate','grave','graze','greed','greet','grief','grill','grind','groan','groin','grope','gross','group','grout','grove','guess','guile','guise','gusto',
+  'habit','hatch','haven','hazel','heart','heavy','hence','hinge','hippo','hoist','holly','homer','honey','honor','horse','hotel','hound','house','human','humor','hurry',
+  'image','imply','index','inept','infer','inner','input','inter','intro','irony','issue','ivory',
+  'jelly','jewel','joker','joust','juice','juicy','jumbo','jumpy',
+  'karma','kebab','kneel','knife','knock','knoll','kneel','known',
+  'label','lathe','layer','learn','least','leave','lemon','level','light','lilac','limit','linen','liner','lingo','liver','lodge','logic','loose','lover','lucid','lucky','lunar','lunch','lusty',
+  'magic','major','maker','manor','march','marry','match','maybe','mayor','meant','medal','media','mercy','merit','merry','metal','might','mirth','miser','model','money','month','moose','moral','morse','mossy','motel','motif','motor','motto','mount','mourn','mouse','mouth','movie','muddy','multi','music','muddy','mushy','myrrh',
+  'naive','nasty','naval','never','night','noble','noise','north','noted','novel','nurse',
+  'ocean','offer','olive','onset','opera','orbit','order','other','ought','outer','outdo','owned','oxide',
+  'paint','panel','panic','paper','party','pause','peace','pearl','penal','penny','perch','petty','phase','phone','photo','piano','pinch','pixel','pizza','place','plain','plane','plant','plate','plaza','plead','pluck','plumb','plume','plunk','point','poise','polar','polka','poppy','power','prank','press','price','pride','prime','primp','print','prior','probe','prone','proof','prose','proud','prove','prowl','psalm','pulse','punch','pupil','purse','pushy',
+  'queen','query','queue','quill','quirk','quota','quote',
+  'rabbi','radar','radio','raise','rally','ranch','range','rapid','ratio','reach','ready','realm','rebel','reign','relax','repay','repel','rerun','reuse','risky','rival','river','robin','rocky','rouge','rough','round','rouse','rover','royal','ruddy','rugby','ruler','rural',
+  'sadly','saint','sauce','savvy','scale','scare','scene','scone','scope','score','scorn','scout','screw','scrub','seize','sense','serve','seven','shack','shade','shaft','shake','shall','shame','shape','share','shark','sharp','sheen','sheep','sheer','sheet','shelf','shell','shift','shine','shirt','shock','shore','short','shout','shove','shrub','shrug','sight','silly','since','sixth','sixty','skate','skill','skimp','skull','skunk','slate','slave','sleek','sleep','sleet','slept','slice','slide','slope','sloth','small','smart','smell','smile','smite','smoke','snack','snake','snare','sneak','sneer','sniff','snoop','snore','solve','sorry','south','space','spare','spark','spawn','speak','speck','speed','spell','spend','spice','spill','spine','spoke','spook','spoon','sport','spout','spray','stack','staff','stage','stain','stair','stake','stale','stall','stamp','stand','stare','start','state','stays','stead','steam','steel','steep','steer','stern','stick','stiff','still','sting','stock','stomp','stone','stony','stood','storm','story','stove','strap','straw','stray','strep','strip','stuck','study','stuff','stung','stunk','style','sugar','suite','sunny','super','surge','swamp','swear','sweep','sweet','swept','swift','swipe','swirl','swoon','swoop','sword','swore',
+  'table','talon','tango','tapir','tasty','taunt','tears','teeth','tempo','tense','tenth','tepid','their','there','these','thick','thing','think','third','thorn','those','three','threw','throw','thump','tiara','tight','tiger','timer','tired','title','today','tonal','tonic','topaz','torch','total','tough','tower','toxic','trace','track','trade','trail','train','trait','trawl','tread','treat','trial','tribe','trick','tried','trout','truck','truly','trunk','trust','truth','tulip','tumor','tuner','tunic','tutor','tweed','tweet','twice','twirl','twist','typed',
+  'ultra','unify','union','unite','unity','until','upper','upset','urban','usage','utile','utter',
+  'vague','valid','valor','value','valve','vapor','vault','veins','verse','video','vigor','viola','viper','viral','virus','visor','vital','vivid','vocal','vodka','voice','voter',
+  'wager','waltz','waste','watch','water','weary','weave','wedge','weedy','weigh','weird','whale','wheat','wheel','where','while','whine','whole','whose','wider','witch','woman','women','woods','world','worry','worse','worst','worth','would','wound','wrath','write','wrote',
+  'yacht','yearn','yield','young','youth',
+  'zebra','zilch','zippy',
+  // 6+ letter words
+  'abroad','absent','absorb','accent','accept','access','accuse','active','actual','adjust','admire','advice','affect','afford','afraid','agency','agenda','almost','always','amazon','amount','animal','answer','anyone','anyway','appear','around','artist','aspire','assert','assign','attack','attend','avenge','avenue',
+  'banana','banner','barely','battle','beauty','before','belief','better','beyond','bother','bottom','bought','bounce','branch','bridge','bright','broken','bronze','bubble','budget','butter',
+  'cactus','cannot','castle','caught','center','change','charge','choice','church','circle','clever','coffee','column','combat','common','comply','corner','cotton','coyote','create','credit','crisis','crunchy',
+  'damage','danger','debate','decide','defend','define','degree','delight','demand','desire','detail','device','differ','dinner','direct','divide','dragon','during',
+  'either','empire','enable','energy','engage','enough','escape','except','expand','expect','expose','extend',
+  'fabric','factor','failed','fallen','family','famous','father','figure','filter','finger','finish','flight','flower','follow','forest','forget','formal','former','foster','frozen','future',
+  'gather','gentle','glance','global','golden','google','gossip','govern','growth','guitar',
+  'hammer','happen','hardly','hatred','health','height','helmet','hidden','hollow','honest','hunger','hunter',
+  'impact','indeed','inside','intake','island',
+  'jacket','jigsaw','joyful','junior','jungle',
+  'keeper','kitten','knight',
+  'ladder','landed','lessen','letter','listen','little','lively','lizard','longer','losing','lovely','lowest','luxury',
+  'manner','margin','market','master','matter','modest','moment','monkey','months','mother','murder','muscle','myself',
+  'narrow','nation','nature','nearly','needle','nephew','nicely','normal','notice','number',
+  'object','obtain','office','orange','origin','outfit','output','oxford',
+  'palace','parent','pencil','people','pepper','permit','person','phrase','pickle','pigeon','pillar','planet','please','pocket','policy','portal','potato','potter','prefer','pretty','prince','prison','profit','proper','public','puppet','purple',
+  'racing','rather','reason','recent','record','reduce','refuge','refuse','region','relate','repair','repeat','retire','return','reveal','reward','rocket','rubber','runner',
+  'salmon','school','screen','secret','select','single','sister','slowly','source','spider','spread','spring','stream','street','stress','strict','string','strong','struck','second','settle','should','simple','social','silver','statue','stored','sunset','surely','system',
+  'talent','target','teapot','temple','tender','tennis','theory','thread','threat','throne','ticket','timber','tongue','toward','travel','tripod','troops','tunnel','turkey','twelve','twenty','typhon',
+  'unique','unless','unseen','update','useful',
+  'valley','velvet','victim','violet','vision','volume',
+  'wander','wealth','weapon','weight','window','winner','winter','wisdom','within','wizatd','wonder','wooden','worthy','wreath','writer',
+  'yellow','wonder'
+]);
+
+// ═══════════════════════════════════════════════════════
+// BONFIG
+// ═══════════════════════════════════════════════════════
+const DIFF_CONFIG = {
+  easy:   { time: 120, planeSpeed: 6000, maxTray: 12, pts: 1, label: 'EASY' },
+  medium: { time: 90,  planeSpeed: 4000, maxTray: 10, pts: 2, label: 'MEDIUM' },
+  hard:   { time: 60,  planeSpeed: 2500, maxTray: 8,  pts: 3, label: 'HARD' },
+};
+
+// Weighted letter distribution (more vowels + common letters)
+const LETTER_POOL = 'AAAAAAAAABBBCCCDDDDEEEEEEEEEEFFFGGGHHHHIIIIIIIJJKKLLLLLMMMNNNNNNOOOOOOOPPPQQRRRRRRRSSSSSSTTTTTTUUUUUVVVWWWXYYYZZ';
+
+// ═══════════════════════════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════════════════════════
+let score, wordsFound, passed, timeLeft, timerInterval, planeInterval;
+let trayLetters = [];   // [{id, letter}]
+let wordLetters = [];   // [{id, letter}]
+let nextId = 0;
+let diff, cfg, lastDiff, musicOn = true;
+let bestWord = '', longestWord = '';
+let planeRows = 3;
+
+// ═══════════════════════════════════════════════════════
+// AUDIO
+// ═══════════════════════════════════════════════════════
+let audioCtx = null;
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playTone(freq, dur, type='sine', vol=0.3, delay=0) {
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = type; osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+    gain.gain.setValueAtTime(vol, ctx.currentTime + delay);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+    osc.start(ctx.currentTime + delay);
+    osc.stop(ctx.currentTime + delay + dur + 0.05);
+  } catch(e) {}
+}
+function playCorrect()  { [523,659,784,1047].forEach((f,i)=>playTone(f,.12,'sine',.25,i*.1)); }
+function playWrong()    { playTone(220,.15,'sawtooth',.2); playTone(180,.2,'sawtooth',.15,.1); }
+function playClick()    { playTone(600,.05,'sine',.1); }
+function playDrop()     { playTone(400,.08,'sine',.15); }
+function playGameOver() { [392,440,523,659,784].forEach((f,i)=>playTone(f,.15,'sine',.2,i*.12)); }
+function toggleMusicPref() {
+  musicOn = !musicOn;
+  document.getElementById('music-pref-label').textContent = musicOn ? 'ON' : 'OFF';
+}
+
+// ═══════════════════════════════════════════════════════
+// SCREENS
+// ═══════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════
+// GAME START
+// ═══════════════════════════════════════════════════════
+function startGame(difficulty) {
+  playClick();
+  diff = difficulty;
+  lastDiff = diff;
+  cfg = DIFF_CONFIG[diff];
+
+  score = 0; wordsFound = 0; passed = 0;
+  timeLeft = cfg.time;
+  trayLetters = []; wordLetters = []; nextId = 0;
+  bestWord = ''; longestWord = '';
+
+  document.getElementById('diff-label').textContent = cfg.label;
+  document.getElementById('sc-time').textContent = timeLeft + 's';
+  document.getElementById('sc-score').textContent = '0';
+  document.getElementById('sc-words').textContent = '0';
+  document.getElementById('timer-bar').style.width = '100%';
+
+  renderTray(); renderWord();
+  setFeedback('neutral', '');
+  setupSky();
+  showScreen('screen-game');
+
+  // Seed initial letters
+  for (let i = 0; i < 5; i++) addLetterToTray(randomLetter());
+
+  startTimer();
+  startPlanes();
+}
+
+function randomLetter() {
+  return LETTER_POOL[Math.floor(Math.random() * LETTER_POOL.length)];
+}
+
+// ═══════════════════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════════════════
+function startTimer() {
+  clearInterval(timerInterval);
+  const bar = document.getElementById('timer-bar');
+  const total = cfg.time;
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById('sc-time').textContent = timeLeft + 's';
+    bar.style.width = (timeLeft / total * 100) + '%';
+    if (timeLeft <= 10) bar.style.background = '#fd79a8';
+    if (timeLeft <= 0) { clearInterval(timerInterval); endGame(); }
+  }, 1000);
+}
+
+// ═══════════════════════════════════════════════════════
+// PLANES / LETTER DROPPING
+// ═══════════════════════════════════════════════════════
+const ROW_HEIGHTS = [30, 90, 155]; // Y positions in sky
+
+function setupSky() {
+  const sky = document.getElementById('sky');
+  sky.innerHTML = '';
+}
+
+function startPlanes() {
+  clearInterval(planeInterval);
+  spawnPlane(); // immediate
+  planeInterval = setInterval(spawnPlane, cfg.planeSpeed * 0.7);
+}
+
+function spawnPlane() {
+  if (trayLetters.length >= cfg.maxTray) return;
+  const letter = randomLetter();
+  const rowY = ROW_HEIGHTS[Math.floor(Math.random() * ROW_HEIGHTS.length)];
+  const rtl = Math.random() > 0.5;
+  const sky = document.getElementById('sky');
+  const duration = cfg.planeSpeed;
+
+  const plane = document.createElement('div');
+  plane.className = 'plane-obj';
+  plane.style.cssText = `top:${rowY}px;animation:flyAcross ${duration}ms linear forwards;`;
+
+  const emoji = document.createElement('div');
+  emoji.className = 'plane-emoji';
+  emoji.textContent = rtl ? '✈️' : '✈️';
+  if (rtl) { emoji.style.transform = 'scaleX(-1)'; plane.style.left = 'auto'; plane.style.right = '-140px'; plane.style.animation = `flyAcrossRTL ${duration}ms linear forwards`; }
+
+  const tile = document.createElement('div');
+  tile.className = 'plane-letter';
+  tile.textContent = letter;
+
+  if (rtl) { plane.appendChild(tile); plane.appendChild(emoji); }
+  else      { plane.appendChild(emoji); plane.appendChild(tile); }
+
+  sky.appendChild(plane);
+
+  // Drop letter at midpoint
+  const dropTime = duration * 0.5;
+  setTimeout(() => {
+    if (trayLetters.length < cfg.maxTray) {
+      addLetterToTray(letter);
+      if (musicOn) playDrop();
+      // Visual drop effect
+      const rect = tile.getBoundingClientRect();
+      const drop = document.createElement('div');
+      drop.className = 'dropping-letter';
+      drop.textContent = letter;
+      drop.style.cssText = `left:${rect.left}px;top:${rect.top}px;`;
+      document.body.appendChild(drop);
+      setTimeout(() => drop.remove(), 700);
+    }
+  }, dropTime);
+
+  setTimeout(() => plane.remove(), duration + 100);
+}
+
+// ═══════════════════════════════════════════════════════
+// TRAY & WORD
+// ═══════════════════════════════════════════════════════
+function addLetterToTray(letter) {
+  trayLetters.push({ id: nextId++, letter });
+  renderTray();
+}
+
+function renderTray() {
+  const tray = document.getElementById('letter-tray');
+  tray.innerHTML = '';
+  trayLetters.forEach(({id, letter}) => {
+    const tile = document.createElement('div');
+    tile.className = 'tray-tile';
+    tile.textContent = letter;
+    tile.onclick = () => moveToWord(id);
+    tray.appendChild(tile);
+  });
+}
+
+function renderWord() {
+  const wd = document.getElementById('word-display');
+  const hint = document.getElementById('word-hint');
+  wd.innerHTML = '';
+  if (wordLetters.length === 0) {
+    wd.appendChild(hint || (() => { const s=document.createElement('span'); s.id='word-hint'; s.textContent='Tap letters above to build a word'; return s; })());
+  } else {
+    wordLetters.forEach(({id, letter}) => {
+      const tile = document.createElement('div');
+      tile.className = 'word-tile';
+      tile.textContent = letter;
+      tile.onclick = () => returnToTray(id);
+      wd.appendChild(tile);
+    });
+  }
+  document.getElementById('btn-submit').disabled = wordLetters.length < 3;
+}
+
+function moveToWord(id) {
+  playClick();
+  const idx = trayLetters.findIndex(t => t.id === id);
+  if (idx < 0) return;
+  const [item] = trayLetters.splice(idx, 1);
+  wordLetters.push(item);
+  renderTray(); renderWord();
+  setFeedback('neutral', '');
+}
+
+function returnToTray(id) {
+  playClick();
+  const idx = wordLetters.findIndex(t => t.id === id);
+  if (idx < 0) return;
+  const [item] = wordLetters.splice(idx, 1);
+  trayLetters.push(item);
+  renderTray(); renderWord();
+}
+
+function clearWord() {
+  playClick();
+  trayLetters = [...trayLetters, ...wordLetters];
+  wordLetters = [];
+  renderTray(); renderWord();
+  setFeedback('neutral', '');
+}
+
+function passLetters() {
+  playClick();
+  passed++;
+  score = Math.max(0, score - 5);
+  wordLetters = [];
+  trayLetters = [];
+  for (let i = 0; i < 5; i++) addLetterToTray(randomLetter());
+  renderWord();
+  document.getElementById('sc-score').textContent = score;
+  setFeedback('wrong', '⏩ New letters! (-5 pts)');
+}
+
+// ═══════════════════════════════════════════════════════
+// SUBMIT
+// ═══════════════════════════════════════════════════════
+function submitWord() {
+  if (wordLetters.length < 3) return;
+  const word = wordLetters.map(t => t.letter).join('').toLowerCase();
+
+  if (!VALID_WORDS.has(word)) {
+    playWrong();
+    setFeedback('wrong', `❌ "${word.toUpperCase()}" is not a valid word`);
+    return;
+  }
+
+  // Score: length × difficulty multiplier
+  const pts = word.length * cfg.pts * (word.length >= 6 ? 2 : 1);
+  score += pts;
+  wordsFound++;
+  if (pts > (bestWord ? bestWord.pts : 0) || !bestWord) bestWord = { word: word.toUpperCase(), pts };
+  if (word.length > longestWord.length) longestWord = word.toUpperCase();
+
+  playCorrect();
+  const msg = word.length >= 6 ? `🌟 BONUS! ${word.toUpperCase()} +${pts}` : `✅ ${word.toUpperCase()} +${pts}`;
+  setFeedback('correct', msg);
+
+  // Remove used letters
+  wordLetters = [];
+  document.getElementById('sc-score').textContent = score;
+  document.getElementById('sc-words').textContent = wordsFound;
+  renderTray(); renderWord();
+
+  if (pts >= 12) launchConfetti();
+}
+
+// ═══════════════════════════════════════════════════════
+// END GAME
+// ═══════════════════════════════════════════════════════
+function endGame() {
+  clearInterval(timerInterval);
+  clearInterval(planeInterval);
+  playGameOver();
+
+  let grade = '😓 Keep Practising!';
+  if (wordsFound >= 20) grade = '🏆 Alphabet Master!';
+  else if (wordsFound >= 12) grade = '🎖️ Excellent!';
+  else if (wordsFound >= 7)  grade = '👏 Good Work!';
+  else if (wordsFound >= 3)  grade = '👍 Not Bad!';
+
+  document.getElementById('end-grade').textContent = grade;
+  document.getElementById('end-score').textContent = score;
+  document.getElementById('end-words').textContent = wordsFound;
+  document.getElementById('end-best').textContent = bestWord ? bestWord.word : '—';
+  document.getElementById('end-long').textContent = longestWord || '—';
+  document.getElementById('end-passed').textContent = passed;
+
+  if (wordsFound >= 7) launchConfetti();
+  showScreen('screen-end');
+}
+
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+function setFeedback(type, msg) {
+  const el = document.getElementById('feedback');
+  el.className = type;
+  el.textContent = msg;
+}
+
+function launchConfetti() {
+  const colors = ['#74b9ff','#fdcb6e','#a29bfe','#55efc4','#fd79a8','#fff'];
+  for (let i = 0; i < 60; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.cssText = `left:${Math.random()*100}vw;width:${6+Math.random()*8}px;height:${10+Math.random()*8}px;background:${colors[Math.floor(Math.random()*colors.length)]};--dur:${1.5+Math.random()*2}s;--rot:${Math.random()*720-360}deg;`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }, i * 40);
+  }
+}
+
+// ── CLOUDS ──
+(function() {
+  const bg = document.getElementById('stars-bg');
+  for (let i = 0; i < 5; i++) {
+    const c = document.createElement('div');
+    c.className = 'cloud';
+    const w = 80 + Math.random() * 100;
+    c.style.cssText = `width:${w}px;height:${w*0.4}px;top:${Math.random()*60}%;animation-duration:${18+Math.random()*15}s;animation-delay:-${Math.random()*20}s;`;
+    bg.appendChild(c);
+  }
+})();
+
+</script>
+</body>
+</html>
