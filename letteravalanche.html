@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8363731972559177" crossorigin="anonymous"></script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Letter Avalanche | PzedArcade</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(135deg, #0d0d1a 0%, #1a1a2e 60%, #16213e 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #fff;
+      overflow-x: hidden;
+    }
+    #stars-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+    .star { position: absolute; border-radius: 50%; background: #fff; animation: twinkle var(--d,3s) infinite; }
+    @keyframes twinkle { 0%,100%{opacity:.15;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
+    #app { position: relative; z-index: 1; width: 100%; max-width: 700px; padding: 12px 16px 24px; display: flex; flex-direction: column; align-items: center; }
+    .ad-slot { width:100%; max-width:728px; background:rgba(255,255,255,0.04); border:1px dashed rgba(255,255,255,0.15); border-radius:8px; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.25); font-size:0.7rem; letter-spacing:1px; text-transform:uppercase; }
+    .ad-top { height:90px; margin-bottom:10px; }
+    .ad-bottom { height:90px; margin-top:16px; }
+    .ad-mid { height:60px; margin:10px 0; }
+    .pzed-header { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:50px; padding:8px 20px 8px 8px; margin-bottom:16px; width:100%; }
+    .pzed-avatar { width:52px; height:52px; border-radius:50%; background:rgba(253,121,168,0.3); border:2px solid #fd79a8; overflow:hidden; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1.4rem; }
+    .pzed-avatar img { width:100%; height:100%; object-fit:cover; }
+    .pzed-info { flex:1; text-align:left; }
+    .pzed-name { font-family:'Fredoka One',cursive; font-size:1rem; color:#fd79a8; }
+    .pzed-tag { font-size:0.7rem; color:rgba(255,255,255,0.4); }
+    .pzed-yt { font-size:0.7rem; font-weight:700; background:#ff0000; color:#fff; padding:4px 10px; border-radius:50px; text-decoration:none; white-space:nowrap; }
+    .game-title { font-family:'Fredoka One',cursive; font-size:3rem; letter-spacing:3px; background:linear-gradient(90deg,#fd79a8,#fdcb6e,#55efc4,#00cec9); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1; }
+    .game-subtitle { font-size:0.8rem; color:#fd79a8; letter-spacing:3px; text-transform:uppercase; margin-bottom:20px; }
+    .screen { width:100%; display:none; flex-direction:column; align-items:center; }
+    .screen.active { display:flex; }
+    /* Mode select */
+    .mode-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; width:100%; margin:8px 0 20px; }
+    .mode-card { border:none; border-radius:20px; padding:22px 10px; cursor:pointer; transition:transform .2s,box-shadow .2s; display:flex; flex-direction:column; align-items:center; gap:8px; font-family:'Fredoka One',cursive; }
+    .mode-card:hover { transform:translateY(-6px); box-shadow:0 16px 40px rgba(0,0,0,.4); }
+    .mode-card.easy { background:linear-gradient(135deg,#00b894,#55efc4); color:#1a1a2e; }
+    .mode-card.medium { background:linear-gradient(135deg,#fdcb6e,#e17055); color:#1a1a2e; }
+    .mode-card.hard { background:linear-gradient(135deg,#fd79a8,#e84393); color:#fff; }
+    .mode-icon { font-size:2rem; }
+    .mode-name { font-size:1.3rem; }
+    .mode-detail { font-family:'Nunito',sans-serif; font-size:0.72rem; font-weight:700; opacity:.75; }
+    /* Game screen */
+    .scorebar { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); border-radius:50px; padding:8px 20px; margin-bottom:10px; width:100%; }
+    .sc-item { text-align:center; }
+    .sc-label { font-size:0.62rem; text-transform:uppercase; color:#fd79a8; letter-spacing:1px; }
+    .sc-val { font-size:1.3rem; font-weight:800; }
+    .sc-val.yellow { color:#fdcb6e; }
+    .sc-val.green { color:#55efc4; }
+    .sc-val.red { color:#ff7675; }
+    /* Avalanche area */
+    .avalanche-wrap { width:100%; background:rgba(255,255,255,0.05); border:2px solid rgba(255,255,255,0.12); border-radius:24px; padding:16px; margin-bottom:14px; position:relative; overflow:hidden; min-height:200px; }
+    .avalanche-hint { font-size:0.75rem; color:#fd79a8; text-transform:uppercase; letter-spacing:2px; margin-bottom:8px; text-align:center; }
+    .falling-letters { position:relative; width:100%; height:160px; overflow:hidden; }
+    .falling-letter { position:absolute; font-family:'Fredoka One',cursive; font-size:1.9rem; color:#fff; cursor:pointer; border-radius:12px; width:50px; height:56px; display:flex; align-items:center; justify-content:center; transition:opacity .15s; user-select:none; }
+    .falling-letter.correct-flash { animation:flashCorrect .3s ease; }
+    .falling-letter.wrong-flash { animation:flashWrong .3s ease; }
+    @keyframes flashCorrect { 0%,100%{background:rgba(85,239,196,.25)} 50%{background:rgba(85,239,196,.7);box-shadow:0 0 20px rgba(85,239,196,.8);} }
+    @keyframes flashWrong { 0%,100%{background:rgba(255,118,117,.0)} 50%{background:rgba(255,118,117,.5);box-shadow:0 0 16px rgba(255,118,117,.7);} }
+    /* Word display */
+    .word-display { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-bottom:12px; min-height:60px; }
+    .letter-box { width:48px; height:54px; background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.2); border-radius:12px; display:flex; align-items:center; justify-content:center; font-family:'Fredoka One',cursive; font-size:1.7rem; color:#fff; transition:all .15s; }
+    .letter-box.filled { background:rgba(253,121,168,0.2); border-color:#fd79a8; box-shadow:0 0 10px rgba(253,121,168,.3); }
+    .letter-box.correct { background:rgba(85,239,196,.25); border-color:#55efc4; }
+    .letter-box.wrong { background:rgba(255,118,117,.25); border-color:#ff7675; }
+    /* Feedback */
+    .feedback { width:100%; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.05rem; margin-bottom:8px; transition:all .3s; }
+    .feedback.correct { background:rgba(85,239,196,.2); color:#55efc4; }
+    .feedback.wrong { background:rgba(255,118,117,.2); color:#ff7675; }
+    .feedback.neutral { background:transparent; }
+    /* Lives */
+    .lives-row { display:flex; gap:6px; margin-bottom:10px; }
+    .life-heart { font-size:1.4rem; transition:all .3s; }
+    .life-heart.lost { opacity:0.2; transform:scale(.8); }
+    /* Progress */
+    .progress-wrap { width:100%; background:rgba(255,255,255,0.08); border-radius:50px; height:6px; margin-bottom:12px; overflow:hidden; }
+    .progress-bar { height:100%; border-radius:50px; background:linear-gradient(90deg,#fd79a8,#fdcb6e); transition:width .4s ease; }
+    /* Streak dots */
+    .streak-wrap { display:flex; gap:7px; margin-bottom:10px; }
+    .s-dot { width:13px; height:13px; border-radius:50%; background:rgba(255,255,255,0.12); transition:all .3s; }
+    .s-dot.lit { background:#fdcb6e; box-shadow:0 0 8px #fdcb6e; transform:scale(1.25); }
+    /* Timer bar */
+    .timer-wrap { width:100%; background:rgba(255,255,255,0.1); border-radius:50px; height:12px; margin-bottom:10px; overflow:hidden; }
+    .timer-bar { height:100%; border-radius:50px; background:linear-gradient(90deg,#55efc4,#fdcb6e,#e17055); transition:width .08s linear; }
+    /* Diff badge */
+    .diff-badge { display:inline-block; padding:3px 12px; border-radius:50px; font-size:.7rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+    .diff-badge.easy { background:rgba(0,184,148,.25); color:#55efc4; }
+    .diff-badge.medium { background:rgba(253,203,110,.25); color:#fdcb6e; }
+    .diff-badge.hard { background:rgba(253,121,168,.25); color:#fd79a8; }
+    /* Music toggle */
+    .music-toggle { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:50px; padding:8px 20px; cursor:pointer; font-size:0.85rem; color:#fd79a8; margin-bottom:10px; transition:background .2s; }
+    .music-toggle:hover { background:rgba(255,255,255,0.12); }
+    /* End screen */
+    .end-title { font-family:'Fredoka One',cursive; font-size:2.6rem; background:linear-gradient(90deg,#fd79a8,#fdcb6e); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .end-card { width:100%; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.14); border-radius:22px; padding:28px; margin:16px 0; }
+    .end-big { font-family:'Fredoka One',cursive; font-size:4.5rem; color:#fdcb6e; text-align:center; }
+    .end-sub { color:rgba(255,255,255,.55); font-size:.95rem; margin-top:4px; }
+    .end-grade { font-family:'Fredoka One',cursive; font-size:1.6rem; margin-top:10px; }
+    .end-stats { display:flex; justify-content:center; gap:30px; margin-top:16px; }
+    .e-stat { text-align:center; }
+    .e-stat-val { font-size:1.8rem; font-weight:800; }
+    .e-stat-lbl { font-size:.68rem; text-transform:uppercase; color:#fd79a8; letter-spacing:1px; }
+    .replay-btn { margin-top:6px; padding:14px 40px; background:linear-gradient(135deg,#fd79a8,#e84393); color:#fff; border:none; border-radius:50px; font-family:'Fredoka One',cursive; font-size:1.3rem; cursor:pointer; transition:transform .2s,box-shadow .2s; }
+    .replay-btn:hover { transform:translateY(-3px); box-shadow:0 10px 30px rgba(232,67,147,.5); }
+    /* Confetti */
+    .confetti-piece { position:fixed; top:-20px; z-index:9999; border-radius:3px; animation:confettiFall var(--dur,2s) ease-in forwards; }
+    @keyframes confettiFall { to { transform:translateY(110vh) rotate(var(--rot,360deg)); opacity:0; } }
+  </style>
+</head>
+<body>
+<div id="stars-bg"></div>
+<div id="app">
+  <div class="ad-slot ad-top">Advertisement</div>
+
+  <div class="pzed-header">
+    <div class="pzed-avatar">
+      <img src="errol-caricature.jpg" alt="Errol – PzedArcade" onerror="this.style.display='none';this.parentElement.innerHTML='🎮'">
+    </div>
+    <div class="pzed-info">
+      <div class="pzed-name">PzedArcade</div>
+      <div class="pzed-tag">@pzedarcadegamingchannel</div>
+    </div>
+    <a class="pzed-yt" href="https://youtube.com/@pzedarcadegamingchannel" target="_blank">▶ YouTube</a>
+  </div>
+
+  <div class="game-title">Letter Avalanche</div>
+  <div class="game-subtitle">Catch the letters · Build the word</div>
+
+  <!-- WELCOME SCREEN -->
+  <div class="screen active" id="screen-welcome">
+    <p style="color:rgba(255,255,255,.6);font-size:.9rem;margin-bottom:16px;">Letters fall from above — tap them in the right order to spell the word before they reach the bottom!</p>
+    <div class="mode-grid">
+      <button class="mode-card easy" onclick="startGame('easy')">
+        <div class="mode-icon">⛄</div>
+        <div class="mode-name">EASY</div>
+        <div class="mode-detail">Slow · 4–5 letters · 3 lives</div>
+      </button>
+      <button class="mode-card medium" onclick="startGame('medium')">
+        <div class="mode-icon">🌊</div>
+        <div class="mode-name">MEDIUM</div>
+        <div class="mode-detail">Medium · 5–6 letters · 3 lives</div>
+      </button>
+      <button class="mode-card hard" onclick="startGame('hard')">
+        <div class="mode-icon">🔥</div>
+        <div class="mode-name">HARD</div>
+        <div class="mode-detail">Fast · 6–8 letters · 2 lives</div>
+      </button>
+    </div>
+    <div class="music-toggle" onclick="toggleMusic()" id="music-btn">🎵 Background Music: <strong id="music-label">ON</strong></div>
+    <div class="ad-slot ad-mid">Advertisement</div>
+    <p style="color:rgba(255,255,255,.3);font-size:.68rem;margin-top:4px;">A PzedArcade Original · Free to Play</p>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="screen" id="screen-game">
+    <div class="diff-badge" id="diff-badge">EASY</div>
+    <div class="scorebar">
+      <div class="sc-item"><div class="sc-label">Score</div><div class="sc-val yellow" id="sc-score">0</div></div>
+      <div class="sc-item"><div class="sc-label">Streak</div><div class="sc-val green" id="sc-streak">0</div></div>
+      <div class="sc-item"><div class="sc-label">Missed</div><div class="sc-val red" id="sc-missed">0</div></div>
+      <div class="sc-item"><div class="sc-label">Word</div><div class="sc-val" id="sc-round">1/12</div></div>
+    </div>
+    <div class="lives-row" id="lives-row"></div>
+    <div class="timer-wrap"><div class="timer-bar" id="timer-bar" style="width:100%"></div></div>
+    <div class="progress-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+    <div class="streak-wrap" id="streak-wrap"></div>
+
+    <div class="avalanche-wrap">
+      <div class="avalanche-hint">Category: <span id="hint-cat">—</span> · Spell: <span id="hint-len">?</span> letters</div>
+      <!-- Word boxes at top -->
+      <div class="word-display" id="word-display"></div>
+      <!-- Falling letters zone -->
+      <div class="falling-letters" id="falling-letters"></div>
+    </div>
+
+    <div class="feedback neutral" id="feedback"></div>
+  </div>
+
+  <!-- END SCREEN -->
+  <div class="screen" id="screen-end">
+    <div class="end-title">Avalanche Done!</div>
+    <div class="end-card">
+      <div class="end-big" id="end-score">0 pts</div>
+      <div class="end-sub" id="end-detail"></div>
+      <div class="end-grade" id="end-grade"></div>
+      <div class="end-stats">
+        <div class="e-stat"><div class="e-stat-val green" id="end-correct">0</div><div class="e-stat-lbl">Solved</div></div>
+        <div class="e-stat"><div class="e-stat-val red" id="end-missed">0</div><div class="e-stat-lbl">Missed</div></div>
+        <div class="e-stat"><div class="e-stat-val yellow" id="end-best">0</div><div class="e-stat-lbl">Best Streak</div></div>
+      </div>
+    </div>
+    <div class="ad-slot ad-mid">Advertisement</div>
+    <button class="replay-btn" onclick="showWelcome()">Play Again ↺</button>
+    <p style="color:rgba(255,255,255,.3);font-size:.7rem;margin-top:16px;">PzedArcade · Letter Avalanche</p>
+    <p style="margin-top:12px;font-size:.75rem;">
+      Also play:
+      <a href="wordscrambleblitz.html" style="color:#fdcb6e;font-weight:900;">Scramble Blitz</a> &nbsp;|&nbsp;
+      <a href="alphabetdrop.html" style="color:#fd79a8;font-weight:900;">Alphabet Drop</a> &nbsp;|&nbsp;
+      <a href="lexdrop.html" style="color:#55efc4;font-weight:900;">LexDrop</a>
+    </p>
+  </div>
+
+  <div class="ad-slot ad-bottom">Advertisement</div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// WORD BANK
+// ════════════════════════════════════════════════════════════════
+const WORDS = {
+  easy: [
+    {w:'JUMP',c:'Action'},{w:'LAKE',c:'Nature'},{w:'BIRD',c:'Animal'},{w:'FISH',c:'Animal'},
+    {w:'CAKE',c:'Food'},{w:'STAR',c:'Space'},{w:'RAIN',c:'Weather'},{w:'FRAN',c:'Animal'},
+    {w:'DRUM',c:'Music'},{w:'BOAT',c:'Transport'},{w:'ROSE',c:'Nature'},{w:'WOLF',c:'Animal'},
+    {w:'LAMP',c:'Object'},{w:'SAND',c:'Nature'},{w:'MILK',c:'Food'},{w:'CROWN',c:'Object'},
+    {w:'GRAPE',c:'Food'},{w:'STONE',c:'Nature'},{w:'TIGER',c:'Animal'},{w:'FLAME',c:'Nature'},
+    {w:'DANCE',c:'Action'},{w:'RIVER',c:'Nature'},{w:'GIANT',c:'Fantasy'},{w:'CLOWN',c:'People'},
+  ],
+  medium: [
+    {w:'JUNGLE',c:'Nature'},{w:'CASTLE',c:'Building'},{w:'PLANET',c:'Space'},{w:'BRIDGE',c:'Structure'},
+    {w:'ROCKET',c:'Space'},{w:'MONKEY',c:'Animal'},{w:'FROZEN',c:'Weather'},{w:'SPRINT',c:'Action'},
+    {w:'CRAYON',c:'Object'},{w:'SUNSET',c:'Nature'},{w:'PUZZLE',c:'Object'},{w:'TURKEY',c:'Animal'},
+    {w:'BRIGHT',c:'Adjective'},{w:'GARDEN',c:'Nature'},{w:'BASKET',c:'Object'},{w:'DANGER',c:'Feeling'},
+    {w:'LOCKET',c:'Object'},{w:'MARBLE',c:'Object'},{w:'FALCON',c:'Animal'},{w:'BREEZE',c:'Weather'},
+    {w:'CANDLE',c:'Object'},{w:'WALRUS',c:'Animal'},{w:'PEBBLE',c:'Nature'},{w:'FOREST',c:'Nature'},
+  ],
+  hard: [
+    {w:'JOURNEY',c:'Action'},{w:'CAPTAIN',c:'People'},{w:'BLANKET',c:'Object'},{w:'DOLPHIN',c:'Animal'},
+    {w:'THUNDER',c:'Weather'},{w:'CRYSTAL',c:'Nature'},{w:'VOLCANO',c:'Nature'},{w:'LANTERN',c:'Object'},
+    {w:'FREEDOM',c:'Concept'},{w:'PENGUIN',c:'Animal'},{w:'CHAPTER',c:'Writing'},{w:'BLOSSOM',c:'Nature'},
+    {w:'STARFISH',c:'Animal'},{w:'TREASURE',c:'Object'},w:'MOUNTAIN',c:'Nature'},{w:'MIDNIGHT',c:'Time'},
+    {w:'CHAMPION',c:'People'},{w:'CARNIVAL',c:'Event'},{w:'ALPHABET',c:'Language'},{w:'FORTRESS',c:'Building'},
+    {w:'SKELETON',c:'Science'},{w:'UNIVERSE',c:'Space'},{w:'BLIZZARD',c:'Weather'},{w:'SQUADRON',c:'Group'},
+  ]
+};
+
+const DIFF_CONFIG = {
+  easy:   { rounds:12, speed:2200, pts:10, lives:3, label:'EASY'   },
+  medium: { rounds:12, speed:1600, pts:15, lives:3, label:'MEDIUM' },
+  hard:   { rounds:12, speed:1100, pts:20, lives:2, label:'HARD'   },
+};
+const STREAK_MAX = 5;
+
+// ═══════════════════════════════════════════════════════════════╔
+// STATE
+// ═══════════════════════════════════════════════════════════════╔
+let difficulty, cfg, wordsList;
+let score=0, streak=0, bestStreak=0, missed=0, lives=0;
+let roundIdx=0, currentWord=null;
+let pickedLetters=[];
+let fallingLen=[];  // positions of each falling letter
+let rafId=null, rafStart=null;
+let roundActive=false;
+let musicOn=true, audioCtx=null, musicNodes=[];
+�═══════════════════════════════════
+let score, correct, missed, round, streak, bestStreak, queue, diff;
+let currentWord, pickedLetters, fallingTimers, roundActive, lives;
+let timerInterval, wordTimeout, musicOn;
+musicOn = true;
+
+// ════════════════════════════════════════════════════════════════
+// AUDIO
+// ════════════════════════════════════════════════════════════════
+let audioCtx = null, bgGain = null, bgTimer = null;
+function getCtx() { if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
+function playTone(freq,dur,type='sine',vol=0.3,delay=0) {
+  try { const ctx=getCtx(),osc=ctx.createOscillator(),gain=ctx.createGain();
+    osc.connect(gain);gain.connect(ctx.destination);osc.type=type;
+    osc.frequency.setValueAtTime(freq,ctx.currentTime+delay);
+    gain.gain.setValueAtTime(vol,ctx.currentTime+delay);
+    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+dur);
+    osc.start(ctx.currentTime+delay);osc.stop(ctx.currentTime+delay+dur+0.05);
+  } catch(e){}
+}
+function playCorrect() { playTone(523,.1,'sine',.25); playTone(659,.1,'sine',.25,.11); playTone(784,.2,'sine',.28,.22); }
+function playWrong()   { playTone(220,.08,'sawtooth',.2); playTone(180,.2,'sawtooth',.2,.09); }
+function playStreak()  { [523,659,784,1047].forEach((f,i)=>playTone(f,.1,'sine',.22,i*.09)); }
+function playGameOver(){ [392,440,523,659,784].forEach((f,i)=>playTone(f,.15,'sine',.22,i*.12)); }
+function playPick()    { playTone(700,.05,'sine',.15); }
+function startBgMusic(){
+  if(!musicOn) return;
+  try {
+    const ctx=getCtx(); bgGain=ctx.createGain(); bgGain.gain.value=0.05; bgGain.connect(ctx.destination);
+    const notes=[130.8,164.8,196,220,261.6,329.6,392]; let t=ctx.currentTime;
+    function loop(){
+      for(let i=0;i<16;i++){
+        const f=notes[Math.floor(Math.random()*notes.length)];
+        const osc=ctx.createOscillator(); osc.type='triangle'; osc.frequency.value=f;
+        osc.connect(bgGain); osc.start(t+i*0.55); osc.stop(t+i*0.55+0.35);
+      }
+      t+=16*0.55; bgTimer=setTimeout(loop,(16*0.55-1)*1000);
+    }
+    loop();
+  } catch(e){}
+}
+function stopBgMusic(){ if(bgTimer){clearTimeout(bgTimer);bgTimer=null;} if(bgGain){try{bgGain.gain.value=0;}catch(e){}} }
+function toggleMusic(){ musicOn=!musicOn; document.getElementById('music-label').textContent=musicOn?'ON':'OFF'; }
+
+// ════════════════════════════════════════════════════════════════
+// SCREENS
+// ════════════════════════════════════════════════════════════════
+function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function showWelcome(){ stopBgMusic(); clearAll(); showScreen('screen-welcome'); }
+
+// ════════════════════════════════════════════════════════════════
+// START
+// ════════════════════════════════════════════════════════════════
+function shuffle(a){ return [...a].sort(()=>Math.random()-.5); }
+function startGame(d){
+  diff=d; const cfg=DIFF_CONFIG[d];
+  score=correct=missed=round=streak=bestStreak=0;
+  lives=cfg.lives;
+  queue=shuffle(WORDS[d]).slice(0,cfg.rounds);
+  const badge=document.getElementById('diff-badge');
+  badge.textContent=cfg.label; badge.className=`diff-badge ${d}`;
+  // Build streak dots
+  const sw=document.getElementById('streak-wrap'); sw.innerHTML='';
+  for(let i=0;i<STREAK_MAX;i++){ const dot=document.createElement('div'); dot.className='s-dot'; dot.id=`dot-${i}`; sw.appendChild(dot); }
+  buildLives();
+  showScreen('screen-game'); startBgMusic(); updateScorebar(); nextWord();
+}
+function buildLives(){
+  const lr=document.getElementById('lives-row'); lr.innerHTML='';
+  const total=DIFF_CONFIG[diff].lives;
+  for(let i=0;i<total;i++){
+    const h=document.createElement('span'); h.className='life-heart'; h.id=`heart-${i}`; h.textContent='❤️'; lr.appendChild(h);
+  }
+}
+function loseLife(){
+  lives--;
+  const total=DIFF_CONFIG[diff].lives;
+  for(let i=0;i<total;i++){
+    const h=document.getElementById(`heart-${i}`);
+    if(h) h.className=`life-heart${i<lives?'':' lost'}`;
+  }
+  if(lives<=0){ clearAll(); setTimeout(endGame,400); return true; }
+  return false;
+}
+
+// ════════════════════════════════════════════════════════════════
+// WORD SETUP
+// ════════════════════════════════════════════════════════════════
+function clearAll(){
+  clearInterval(timerInterval);
+  if(fallingTimers) fallingTimers.forEach(t=>clearTimeout(t));
+  fallingTimers=[];
+  if(wordTimeout) clearTimeout(wordTimeout);
+  roundActive=false;
+  document.getElementById('falling-letters').innerHTML='';
+}
+function nextWord(){
+  clearAll();
+  if(round>=DIFF_CONFIG[diff].rounds){ endGame(); return; }
+  currentWord=queue[round];
+  pickedLetters=[];
+  roundActive=true;
+  document.getElementById('hint-cat').textContent=currentWord.c;
+  document.getElementById('hint-len').textContent=currentWord.w.length;
+  document.getElementById('sc-round').textContent=`${round+1}/${DIFF_CONFIG[diff].rounds}`;
+  document.getElementById('progress-bar').style.width=`${(round/DIFF_CONFIG[diff].rounds)*100}%`;
+  setFeedback('neutral','');
+  renderWordBoxes();
+  dropLetters();
+  startTimer();
+}
+function renderWordBoxes(){
+  const wd=document.getElementById('word-display'); wd.innerHTML='';
+  for(let i=0;i<currentWord.w.length;i++){
+    const box=document.createElement('div'); box.className='letter-box'; box.id=`box-${i}`;
+    wd.appendChild(box);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// FALLING LETTERS
+// ════════════════════════════════════════════════════════════════
+function dropLetters(){
+  const cfg=DIFF_CONFIG[diff];
+  const letters=currentWord.w.split('');
+  const container=document.getElementById('falling-letters');
+  container.innerHTML='';
+  fallingTimers=[];
+  // Drop all letters with staggered timing, shuffled positions
+  const shuffled=[...letters].map((l,i)=>({l,origIdx:i}));
+  shuffle(shuffled); // randomise order they fall
+  const columns=Math.max(letters.length, 4);
+  const usedCols=new Set();
+  shuffled.forEach(({l,origIdx},dropOrder)=>{
+    const t=setTimeout(()=>{
+      if(!roundActive) return;
+      // Pick a column
+      let col;
+      do { col=Math.floor(Math.random()*columns); } while(usedCols.has(col) && usedCols.size<columns);
+      usedCols.add(col); if(usedCols.size>=columns) usedCols.clear();
+      const xPct=(col/(columns-1||1))*85+2;
+      const el=document.createElement('div');
+      el.className='falling-letter';
+      el.textContent=l;
+      el.id=`fall-${origIdx}`;
+      el.dataset.origIdx=origIdx;
+      const color=['#fd79a8','#fdcb6e','#55efc4','#a29bfe','#74b9ff','#00cec9'][origIdx%6];
+      el.style.cssText=`left:${xPct}%;top:-60px;background:linear-gradient(135deg,${color}88,${color}44);border:2px solid ${color};`;
+      el.onclick=()=>pickLetter(origIdx,el);
+      container.appendChild(el);
+      // Animate fall
+      const duration=cfg.speed+Math.random()*400;
+      const startTime=Date.now();
+      function fall(){
+        if(!roundActive){ el.remove(); return; }
+        const elapsed=Date.now()-startTime;
+        const pct=elapsed/duration;
+        const y=-60+(160+60)*pct; // -60 to 160
+        el.style.top=y+'px';
+        if(y>160){
+          el.remove();
+          // If this letter hasn't been picked and round still active
+          if(roundActive && !el.dataset.picked){
+            handleMissedLetter(origIdx);
+          }
+          return;
+        }
+        requestAnimationFrame(fall);
+      }
+      requestAnimationFrame(fall);
+    }, dropOrder * (cfg.speed/letters.length * 0.8));
+    fallingTimers.push(t);
+  });
+  // Set overall word timeout
+  wordTimeout=setTimeout(()=>{
+    if(roundActive){ roundActive=false; handleWordTimeout(); }
+  }, cfg.speed*2.5);
+}
+function handleMissedLetter(origIdx){
+  // Only penalise if not already picked
+  if(pickedLetters.includes(origIdx)) return;
+  // Wrong order or miss: shake word boxes
+  const nextExpected=pickedLetters.length;
+  if(origIdx===nextExpected){
+    // The letter they needed passed by
+    playWrong();
+    setFeedback('wrong',`⚡ Missed the "${currentWord.w[origIdx]}"!`);
+    missed++; streak=0;
+    updateScorebar(); updateStreakDots();
+    if(loseLife()){ return; }
+  }
+}
+function handleWordTimeout(){
+  missed++;streak=0;
+  playWrong();
+  setFeedback('wrong',`⏰ Time's up! Word was: ${currentWord.w}`);
+  updateScorebar(); updateStreakDots();
+  if(loseLife()){ return; }
+  setTimeout(()=>{ round++; nextWord(); }, 1600);
+}
+
+// ════════════════════════════════════════════════════════════════
+// LETTER PICK
+// ════════════════════════════════════════════════════════════════
+function pickLetter(origIdx, el){
+  if(!roundActive) return;
+  if(el.dataset.picked) return;
+  const nextExpected=pickedLetters.length;
+  if(origIdx===nextExpected){
+    // Correct next letter
+    playPick();
+    el.dataset.picked='1';
+    el.classList.add('correct-flash');
+    setTimeout(()=>el.remove(),300);
+    pickedLetters.push(origIdx);
+    // Update box
+    const box=document.getElementById(`box-${origIdx}`);
+    if(box){ box.textContent=currentWord.w[origIdx]; box.classList.add('filled'); }
+    if(pickedLetters.length===currentWord.w.length){
+      // Word complete!
+      roundActive=false;
+      clearAll();
+      score+=DIFF_CONFIG[diff].pts; correct++; streak++;
+      if(streak>bestStreak) bestStreak=streak;
+      // Flash boxes green
+      for(let i=0;i<currentWord.w.length;i++){
+        const b=document.getElementById(`box-${i}`); if(b){ b.classList.remove('filled'); b.classList.add('correct'); }
+      }
+      if(streak>=STREAK_MAX) playStreak();
+      else playCorrect();
+      setFeedback('correct', streak>=3?`0��� Streak x${streak}! +${DIFF_CONFIG[diff].pts}`:`✅ Correct! +${DIFF_CONFIG[diff].pts}`);
+      updateScorebar(); updateStreakDots();
+      setTimeout(()=>{ round++; nextWord(); },1400);
+    }
+  } else {
+    // Wrong order
+    el.classList.add('wrong-flash');
+    setTimeout(()=>el.classList.remove('wrong-flash'),300);
+    playWrong();
+    setFeedback('wrong',`❌ Need "${currentWord.w[pickedLetters.length]}" next!`);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// TIMER
+// ════════════════════════════════════════════════════════════════
+function startTimer(){
+  const bar=document.getElementById('timer-bar');
+  const cfg=DIFF_CONFIG[diff]; const totalTime=cfg.speed*2.5;
+  const start=Date.now();
+  bar.style.width='100%'; bar.style.background='linear-gradient(90deg,#55efc4,#fdcb6e,#e17055)';
+  timerInterval=setInterval(()=>{
+    const elapsed=Date.now()-start;
+    const pct=Math.max(0,100-(elapsed/totalTime)*100);
+    bar.style.width=pct+'%';
+    if(pct<30) bar.style.background='#e17055';
+  },50);
+}
+
+// ════════════════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════════════════
+function setFeedback(type,msg){ const el=document.getElementById('feedback'); el.className=`feedback ${type}`; el.textContent=msg; }
+function updateScorebar(){
+  document.getElementById('sc-score').textContent=score;
+  document.getElementById('sc-streak').textContent=streak;
+  document.getElementById('sc-missed').textContent=missed;
+}
+function updateStreakDots(){
+  for(let i=0;i<STREAK_MAX;i++){
+    const dot=document.getElementById(`dot-${i}`);
+    if(dot) dot.className=`s-dot${i<streak?' lit':''}`;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// END
+// ════════════════════════════════════════════════════════════════
+function endGame(){
+  stopBgMusic(); playGameOver();
+  const total=DIFF_CONFIG[diff].rounds;
+  const pct=Math.round((correct/total)*100);
+  let grade='⭐ Keep Practising!';
+  if(pct>=90) grade='🏆 Avalanche Master!';
+  else if(pct>=75) grade='� Excellent!';
+  else if(pct>=60) grade='🥈 Good Work!';
+  else if(pct>=40) grade='🥉 Not Bad!';
+  document.getElementById('end-score').textContent=`${score} pts`;
+  document.getElementById('end-detail').textContent=`${correct} solved out of ${total} (${pct}%)`;
+  document.getElementById('end-grade').textContent=grade;
+  document.getElementById('end-correct').textContent=correct;
+  document.getElementById('end-missed').textContent=missed;
+  document.getElementById('end-best').textContent=bestStreak;
+  if(pct>=60) launchConfetti();
+  showScreen('screen-end');
+}
+function launchConfetti(){
+  const colors=['#fd79a8','#fdcb6e','#55efc4','#00cec9','#a29bfe','#fff'];
+  for(let i=0;i<80;i++) setTimeout(()=>{
+    const el=document.createElement('div'); el.className='confetti-piece';
+    el.style.cssText=`left:${Math.random()*100}vw;width:${6+Math.random()*8}px;height:${10+Math.random()*8}px;background:${colors[Math.floor(Math.random()*colors.length)]};--dur:${1.5+Math.random()*2}s;--rot:${Math.random()*720-360}deg;`;
+    document.body.appendChild(el); setTimeout(()=>el.remove(),4000);
+  },i*30);
+}
+
+// ════════════════════════════════════════════════════════════════
+// STARS
+// ════════════════════════════════════════════════════════════════
+(function(){
+  const bg=document.getElementById('stars-bg');
+  for(let i=0;i<80;i++){
+    const s=document.createElement('div'); s.className='star';
+    const sz=1+Math.random()*2.5;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s`;
+    bg.appendChild(s);
+  }
+})();
+</script>
+</body>
+</html>
